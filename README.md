@@ -172,4 +172,4 @@ The long-term goal is to provide creators with a flexible runtime scripting envi
 
 The runtime is designed to evolve independently over time, allowing new features and improvements to be delivered automatically while keeping the creator-facing scripting workflow as stable and accessible as possible.
 
-the hashes I got from OpenKH but it's not really needed right now as I have no got assets to decompile the right way yet 100% aswell as recompile.
+the hashes I got from OpenKH but it's not really needed right now as I do not got assets to decompiling rightnow, but I plan on adding it so initial install put hashes folder in root kh folder.
