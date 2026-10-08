@@ -95,19 +95,24 @@ The goal is for users to **install the system once and then continue using it wi
 
 As new versions are released, the runtime can automatically keep itself up to date when the game is launched.
 
-## Proxy Source Code
+## Source Code
 
-Please **do not copy, redistribute, or reuse the source code of the JayCoder's Runtime proxy/bootstrap implementation without permission**.
+Please **do not copy, redistribute, reuse, or present the source code of the JayCoder's Runtime proxy or `JSCRuntime` as your own without permission**.
 
-The proxy is a core part of the project's infrastructure and was developed specifically to handle runtime loading, library management, and automatic runtime updates.
+This includes:
 
-You are welcome to study the project and learn from its concepts, but I would appreciate it if you **did not directly steal or reuse the proxy source code as your own project or redistribute modified copies of it**.
+* The DXGI proxy/bootstrap source code
+* `JSCRuntime` source code
+* Runtime update and library-loading systems
+* Other original source code and implementations contained within the project
 
-If you want to use the proxy implementation or portions of its source code, please ask first.
+The proxy is a core part of the project's infrastructure and was developed specifically to handle runtime loading, library management, and automatic runtime updates. `JSCRuntime` contains the scripting and runtime functionality built on top of that infrastructure.
 
-## Existing Scripts
+You are welcome to **study the project and learn from its concepts and implementation**, but please do not directly copy the source code, redistribute it, or use substantial portions of it as the foundation of another project without permission.
 
-The runtime is designed to allow creators to continue using their existing scripts as the system develops.
+If you would like to use the proxy, `JSCRuntime`, or portions of their source code in another project, **please ask first**.
+
+I put significant time into developing these systems, and I would appreciate having the original work respected.
 
 For example:
 
