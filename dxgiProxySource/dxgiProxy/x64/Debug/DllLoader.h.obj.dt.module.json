@@ -1,0 +1,14 @@
+{
+    "version": 1,
+    "revision": 0,
+    "rules": [
+        {
+            "primary-output": "x64\\Debug\\DllLoader.obj",
+            "outputs": [
+                "x64\\Debug\\DllLoader.h.obj.dt.module.json",
+                "x64\\Debug\\DllLoader.h.obj.dt.d.json"
+            ],
+            "requires": []
+        }
+    ]
+}
