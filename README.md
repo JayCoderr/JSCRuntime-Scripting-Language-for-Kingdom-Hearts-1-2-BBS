@@ -171,3 +171,5 @@ The current priority is establishing a stable runtime foundation that can be con
 The long-term goal is to provide creators with a flexible runtime scripting environment where they can create their own scripts, menus, functions, interfaces, and gameplay systems while **JayCoder's Runtime handles the underlying execution and runtime functionality**.
 
 The runtime is designed to evolve independently over time, allowing new features and improvements to be delivered automatically while keeping the creator-facing scripting workflow as stable and accessible as possible.
+
+the hashes I got from OpenKH but it's not really needed right now as I have no got assets to decompile the right way yet 100% aswell as recompile.
