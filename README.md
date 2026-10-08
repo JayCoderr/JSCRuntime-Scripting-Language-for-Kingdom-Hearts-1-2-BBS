@@ -19,7 +19,7 @@ The system is intended to support existing script formats and workflows, includi
 .khc
 .anything
 
-as long as it contains jay's runtime code
+as long as it contains JayCoder's Runtime code
 ```
 
 Users can continue working with their existing scripts while the runtime itself receives new features and improvements.
@@ -94,6 +94,16 @@ Install JayCoder's Runtime
 The goal is for users to **install the system once and then continue using it without manually managing runtime updates**.
 
 As new versions are released, the runtime can automatically keep itself up to date when the game is launched.
+
+## Proxy Source Code
+
+Please **do not copy, redistribute, or reuse the source code of the JayCoder's Runtime proxy/bootstrap implementation without permission**.
+
+The proxy is a core part of the project's infrastructure and was developed specifically to handle runtime loading, library management, and automatic runtime updates.
+
+You are welcome to study the project and learn from its concepts, but I would appreciate it if you **did not directly steal or reuse the proxy source code as your own project or redistribute modified copies of it**.
+
+If you want to use the proxy implementation or portions of its source code, please ask first.
 
 ## Existing Scripts
 
