@@ -1,0 +1,9 @@
+﻿  main.cpp
+  menuStructure.cpp
+  overlay.cpp
+  scriptReader.cpp
+  Generating code
+  Previous IPDB not found, fall back to full compilation.
+  All 1623 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  Finished generating code
+  JSCRuntime.vcxproj -> C:\Users\Jaycoder\source\repos\JSCRuntime\x64\Release\JSCRuntime.dll

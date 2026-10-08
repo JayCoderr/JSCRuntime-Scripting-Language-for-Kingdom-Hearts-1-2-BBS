@@ -1,0 +1,7 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="JSCRuntime/JSCRuntime.vcxproj" Id="06903aaa-cb98-4e4f-a3c0-c916bb4df14b" />
+</Solution>
