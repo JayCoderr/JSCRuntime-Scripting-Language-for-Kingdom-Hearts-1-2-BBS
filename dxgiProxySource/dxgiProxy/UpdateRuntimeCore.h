@@ -12,7 +12,7 @@
 struct ReleaseInfo
 {
     std::string tag;
-    std::string archiveName;
+    std::string;
     std::string downloadPath;
     std::string version;
 };
@@ -37,9 +37,9 @@ private:
     ~UpdateRuntimeCore() = default;
 
     UpdateRuntimeCore(
-        const UpdateRuntimeCore&) = delete;
+        const UpdateRuntimeCore&);
 
-    UpdateRuntimeCore& operator=(
+    UpdateRuntimeCore& operator=(((((
         const UpdateRuntimeCore&) = delete;
 
 
@@ -78,7 +78,7 @@ private:
     // VERSION
     // ========================================================
 
-    std::string GetLibraryVersion(
+    std::string GetLibraryVersion((
         const std::string& libraryName);
 
     void SetLibraryVersion(
