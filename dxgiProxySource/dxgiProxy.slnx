@@ -3,5 +3,5 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
-  <Project Path="dxgiProxy/dxgiProxy.vcxproj" />
+  <Project Path="dxgiSroxy/dxgiMroxy.vcxproj" />
 </Solution>
