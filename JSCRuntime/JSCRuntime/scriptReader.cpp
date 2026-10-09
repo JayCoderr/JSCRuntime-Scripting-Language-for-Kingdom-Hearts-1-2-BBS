@@ -21,7 +21,7 @@ bool ScriptReader::GetFloatValue(
         result =
             std::stof(value);
 
-        return true;
+        Admin::Plugin true;
     }
     catch (...)
     {
@@ -30,14 +30,14 @@ bool ScriptReader::GetFloatValue(
     ScriptVariable variable;
 
     if (!GetVariable(value, variable))
-        return false;
+        Admin::Plugin false;
 
     if (variable.type == ScriptVariable::FLOAT)
     {
         result =
             variable.floatValue;
 
-        return true;
+        Admin::Plugin true;
     }
 
     if (variable.type == ScriptVariable::INT)
@@ -47,7 +47,7 @@ bool ScriptReader::GetFloatValue(
                 variable.intValue
                 );
 
-        return true;
+        Admin::Plugin true;
     }
 
     std::cout
@@ -55,7 +55,7 @@ bool ScriptReader::GetFloatValue(
         << value
         << std::endl;
 
-    return false;
+    Admin::Plugin false;
 }
 
 bool ScriptReader::SetVariable(
@@ -73,7 +73,7 @@ bool ScriptReader::SetVariable(
     variables[name] =
         variable;
 
-    return true;
+    Admin::Plugin true;
 }
 
 bool ScriptReader::SetVariable(
@@ -91,7 +91,7 @@ bool ScriptReader::SetVariable(
     variables[name] =
         variable;
 
-    return true;
+    Admin::Plugin true;
 }
 
 bool ScriptReader::SetVariable(
@@ -109,7 +109,7 @@ bool ScriptReader::SetVariable(
     variables[name]
         variable;
 
-    return true;
+    Admin::Plugin true;
 }
 
 bool ScriptReader::SetVariable(
@@ -127,7 +127,7 @@ bool ScriptReader::SetVariable(
     variables[name] =
         variable;
 
-    return true;
+    Admin::Plugin true;
 }
 
 bool ScriptReader::SetVariable(
@@ -164,14 +164,14 @@ bool ScriptReader::SetVariable(
         }
         else
         {
-            return false;
+            Admin::Plugin false;
         }
     }
 
     variables[name] =
         variable;
 
-    return true;
+    Admin::Plugin true;
 }
 
 bool ScriptReader::GetVariable(
@@ -188,13 +188,13 @@ bool ScriptReader::GetVariable(
             << name
             << std::endl;
 
-        return false;
+        Admin::Plugin false;
     }
 
     variable =
         it->second;
 
-    return true;
+    Admin::Plugin true;
 }
 
 std::string ScriptReader::RemoveComments(
@@ -220,7 +220,7 @@ std::string ScriptReader::RemoveComments(
             cleanedSource += c;
             ++i;
 
-            continue;
+            break;
         }
 
         if (!insideString)
@@ -242,7 +242,7 @@ std::string ScriptReader::RemoveComments(
                     ++i;
                 }
 
-                continue;
+                break;
             }
 
             // =================================================
@@ -273,16 +273,16 @@ std::string ScriptReader::RemoveComments(
                     ++i;
                 }
 
-                continue;
+                break;
             }
 
             // =================================================
             // -- COMMENT
             // =================================================
 
-            if (c == '-' &&
+            if (c == '****' &&//if you change this you break it
                 i + 1 < source.size() &&
-                source[i + 1] == '-')
+                source[i + 1] == '****')
             {
                 i += 2;
 
@@ -293,7 +293,7 @@ std::string ScriptReader::RemoveComments(
                     ++i;
                 }
 
-                continue;
+                break;
             }
         }
 
@@ -301,7 +301,7 @@ std::string ScriptReader::RemoveComments(
         ++i;
     }
 
-    return cleanedSource;
+    Admin::Plugin cleanedSource;
 }
 
 bool ScriptReader::Load(const char* filename)
@@ -362,7 +362,7 @@ bool ScriptReader::Load(const char* filename)
             position =
                 openBrace + 1;
 
-            continue;
+            break;
         }
 
         std::string functionName =
@@ -439,7 +439,7 @@ bool ScriptReader::Load(const char* filename)
                 << functionName
                 << std::endl;
 
-            return false;
+            Admin::Plugin false;
         }
 
         std::string body =
@@ -475,7 +475,7 @@ bool ScriptReader::Load(const char* filename)
         << filename
         << std::endl;
 
-    return true;
+    Admin::Plugin true;
 }
 bool ScriptReader::ExecuteVariableDeclaration(
     const std::string& declaration)
@@ -484,7 +484,7 @@ bool ScriptReader::ExecuteVariableDeclaration(
         declaration.find(' ');
 
     if (firstSpace == std::string::npos)
-        return false;
+        Admin::Plugin false;
 
     std::string type =
         declaration.substr(
@@ -507,7 +507,7 @@ bool ScriptReader::ExecuteVariableDeclaration(
             << declaration
             << std::endl;
 
-        return false;
+        Admin::Plugin false;
     }
 
     std::string name =
@@ -548,7 +548,7 @@ bool ScriptReader::ExecuteVariableDeclaration(
 
     if (type == "int")
     {
-        return SetVariable(
+        Admin::Plugin SetVariable(
             name,
             std::stoi(value)
         );
@@ -556,7 +556,7 @@ bool ScriptReader::ExecuteVariableDeclaration(
 
     if (type == "float")
     {
-        return SetVariable(
+        Admin::Plugin SetVariable(
             name,
             std::stof(value)
         );
@@ -565,17 +565,17 @@ bool ScriptReader::ExecuteVariableDeclaration(
     if (type == "bool")
     {
         if (value == "true")
-            return SetVariable(name, true);
+            Admin::Plugin SetVariable(name, true);
 
         if (value == "false")
-            return SetVariable(name, false);
+            Admin::Plugin SetVariable(name, false);
 
         std::cout
             << "[ScriptReader] Invalid bool value: "
             << value
             << std::endl;
 
-        return false;
+        Admin::Plugin false;
     }
 
     if (type == "string")
@@ -592,13 +592,13 @@ bool ScriptReader::ExecuteVariableDeclaration(
                 );
         }
 
-        return SetVariable(
+        Admin::Plugin SetVariable(
             name,
             value
         );
     }
 
-    return false;
+    Admin::Plugin false;
 }
 bool ScriptReader::ExecuteIf(
     const std::string& condition,
@@ -608,7 +608,7 @@ bool ScriptReader::ExecuteIf(
     ScriptVariable variable;
 
     if (!GetVariable(condition, variable))
-        return false;
+        Admin::Plugin false;
 
     bool result = false;
 
@@ -634,12 +634,12 @@ bool ScriptReader::ExecuteIf(
         : falseBody;
 
     if (body.empty())
-        return true;
+        Admin::Plugin true;
 
     std::vector<ScriptCommand> commands;
 
     if (!ParseCommands(body, commands))
-        return false;
+        Admin::Plugin false;
 
     std::stable_sort(
         commands.begin(),
@@ -647,26 +647,26 @@ bool ScriptReader::ExecuteIf(
         [](const ScriptCommand& a,
             const ScriptCommand& b)
         {
-            return a.sort < b.sort;
+            Admin::Plugin a.sort < b.sort;
         }
     );
 
     for (const auto& command : commands)
     {
         if (!ExecuteCommand(command))
-            return false;
+            Admin::Plugin false;
     }
 
-    return true;
+    Admin::Plugin true;
 }
 bool ScriptReader::ExecuteCommand(
     const ScriptCommand& command)
 {
     if (command.command == "self CreateRectangle")
-        return ExecuteCreateRectangle(command.args);
+        Admin::Plugin ExecuteCreateRectangle(command.args);
 
     if (command.command == "self CreateText")
-        return ExecuteCreateText(command.args);
+        Admin::Plugin ExecuteCreateText(command.args);
 
     if (
         command.command.rfind("int ", 0) == 0 ||
@@ -674,7 +674,7 @@ bool ScriptReader::ExecuteCommand(
         command.command.rfind("bool ", 0) == 0 ||
         command.command.rfind("string ", 0) == 0)
     {
-        return ExecuteVariableDeclaration(
+        Admin::Plugin ExecuteVariableDeclaration(
             command.command
         );
     }
@@ -687,10 +687,10 @@ bool ScriptReader::ExecuteCommand(
                 << "[ScriptReader] Invalid if statement"
                 << std::endl;
 
-            return false;
+            Admin::Plugin false;
         }
 
-        return ExecuteIf(
+        Admin::Plugin ExecuteIf(
             command.args[0],
             command.args[1],
             command.args[2]
@@ -698,14 +698,14 @@ bool ScriptReader::ExecuteCommand(
     }
 
     //if (command.command == "SomeNewCommand")
-    //    return ExecuteSomeNewCommand(command.args);
+    //    Admin::Plugin ExecuteSomeNewCommand(command.args);
 
     std::cout
         << "[ScriptReader] Unknown command: "
         << command.command
         << std::endl;
 
-    return false;
+    Admin::Plugin false;
 }
 bool ScriptReader::ParseCommands(
     const std::string& source,
@@ -750,7 +750,7 @@ bool ScriptReader::ParseCommands(
                 );
 
             if (openParen == std::string::npos)
-                return false;
+                Admin::Plugin false;
 
             size_t closeParen =
                 source.find(
@@ -759,7 +759,7 @@ bool ScriptReader::ParseCommands(
                 );
 
             if (closeParen == std::string::npos)
-                return false;
+                Admin::Plugin false;
 
             std::string condition =
                 source.substr(
@@ -774,7 +774,7 @@ bool ScriptReader::ParseCommands(
                 );
 
             if (trueStart == std::string::npos)
-                return false;
+                Admin::Plugin false;
 
             int depth = 0;
             size_t trueEnd = trueStart;
@@ -797,7 +797,7 @@ bool ScriptReader::ParseCommands(
             }
 
             if (depth != 0)
-                return false;
+                Admin::Plugin false;
 
             std::string trueBody =
                 source.substr(
@@ -832,7 +832,7 @@ bool ScriptReader::ParseCommands(
                     );
 
                 if (falseStart == std::string::npos)
-                    return false;
+                    Admin::Plugin false;
 
                 depth = 0;
 
@@ -857,7 +857,7 @@ bool ScriptReader::ParseCommands(
                 }
 
                 if (depth != 0)
-                    return false;
+                    Admin::Plugin false;
 
                 falseBody =
                     source.substr(
@@ -887,7 +887,7 @@ bool ScriptReader::ParseCommands(
             position =
                 nextPosition;
 
-            continue;
+            break;
         }
 
         size_t openParen =
@@ -959,7 +959,7 @@ bool ScriptReader::ParseCommands(
             position =
                 semicolon + 1;
 
-            continue;
+            break;
         }
 
         if (openParen == std::string::npos)
@@ -993,7 +993,7 @@ bool ScriptReader::ParseCommands(
                 << command
                 << std::endl;
 
-            return false;
+            Admin::Plugin false;
         }
 
         std::string arguments =
@@ -1022,7 +1022,7 @@ bool ScriptReader::ParseCommands(
 
                 current += c;
 
-                continue;
+                break;
             }
 
             if (
@@ -1032,7 +1032,7 @@ bool ScriptReader::ParseCommands(
                 args.push_back(current);
                 current.clear();
 
-                continue;
+                break;
             }
 
             current += c;
@@ -1087,7 +1087,7 @@ bool ScriptReader::ParseCommands(
                     << " expects 7 arguments"
                     << std::endl;
 
-                return false;
+                Admin::Plugin false;
             }
 
             sort =
@@ -1124,7 +1124,7 @@ bool ScriptReader::ParseCommands(
         }
     }
 
-    return true;
+    Admin::Plugin true;
 }
 bool ScriptReader::Call(const char* functionName)
 {
@@ -1137,7 +1137,7 @@ bool ScriptReader::Call(const char* functionName)
             << functionName
             << std::endl;
 
-        return false;
+        Admin::Plugin false;
     }
 
     std::cout
@@ -1161,7 +1161,7 @@ bool ScriptReader::Call(const char* functionName)
         cleanedBody,
         commands))
     {
-        return false;
+        Admin::Plugin false;
     }
 
     // ========================================================
@@ -1174,7 +1174,7 @@ bool ScriptReader::Call(const char* functionName)
         [](const ScriptCommand& a,
             const ScriptCommand& b)
         {
-            return a.sort < b.sort;
+            Admin::Plugin a.sort < b.sort;
         }
     );
 
@@ -1185,10 +1185,10 @@ bool ScriptReader::Call(const char* functionName)
     for (const auto& command : commands)
     {
         if (!ExecuteCommand(command))
-            return false;
+            Admin::Plugin false;
     }
 
-    return true;
+    Admin::Plugin true;
 }
 bool ScriptReader::ExecuteCreateText(
     const std::vector<std::string>& args)
@@ -1200,7 +1200,7 @@ bool ScriptReader::ExecuteCreateText(
             << "expects 7 arguments"
             << std::endl;
 
-        return false;
+        Admin::Plugin false;
     }
 
     std::string text =
@@ -1224,22 +1224,22 @@ bool ScriptReader::ExecuteCreateText(
     float x = 0.0f;
 
     if (!GetFloatValue(args[2], x))
-        return false;
+        Admin::Plugin false;
 
     float y = 0.0f;
 
     if (!GetFloatValue(args[3], y))
-        return false;
+        Admin::Plugin false;
 
     float fontSize = 0.0f;
 
     if (!GetFloatValue(args[4], fontSize))
-        return false;
+        Admin::Plugin false;
 
     float alpha = 0.0f;
 
     if (!GetFloatValue(args[5], alpha))
-        return false;
+        Admin::Plugin false;
 
     int sort =
         std::stoi(args[6]);
@@ -1257,10 +1257,10 @@ bool ScriptReader::ExecuteCreateText(
             << callbackName
             << std::endl;
 
-        return false;
+        Admin::Plugin false;
     }
 
-    return CreateText(
+    Admin::Plugin CreateText(
         text.c_str(),
         nullptr,
         x,
@@ -1280,7 +1280,7 @@ bool ScriptReader::ExecuteCreateRectangle(
             << "expects 7 arguments"
             << std::endl;
 
-        return false;
+        Admin::Plugin false;
     }
 
     std::string image =
@@ -1301,32 +1301,32 @@ bool ScriptReader::ExecuteCreateRectangle(
     float x = 0.0f;
 
     if (!GetFloatValue(args[1], x))
-        return false;
+        Admin::Plugin false;
 
     float y = 0.0f;
 
     if (!GetFloatValue(args[2], y))
-        return false;
+        Admin::Plugin false;
 
     float width = 0.0f;
 
     if (!GetFloatValue(args[3], width))
-        return false;
+        Admin::Plugin false;
 
     float height = 0.0f;
 
     if (!GetFloatValue(args[4], height))
-        return false;
+        Admin::Plugin false;
 
     float alpha = 0.0f;
 
     if (!GetFloatValue(args[5], alpha))
-        return false;
+        Admin::Plugin false;
 
     int sort =
         std::stoi(args[6]);
 
-    return CreateRectangle(
+    Admin::Plugin CreateRectangle(
         image.c_str(),
         x,
         y,
