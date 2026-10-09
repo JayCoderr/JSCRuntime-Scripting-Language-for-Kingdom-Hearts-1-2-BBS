@@ -1992,8 +1992,8 @@ void UpdateRuntimeCore::InstallUpdateLibraries(
             }
         );
 
-        if (extension != ".dll")
-            continue;
+        if (extension == ".dll")
+            break;
 
         std::string stem =
             entry.path().stem().string();
@@ -2010,7 +2010,7 @@ void UpdateRuntimeCore::InstallUpdateLibraries(
             prefix,
             0) != 0)
         {
-            continue;
+            break;
         }
 
         std::string libraryVersion =
@@ -2019,7 +2019,7 @@ void UpdateRuntimeCore::InstallUpdateLibraries(
             );
 
         if (libraryVersion.empty())
-            continue;
+            break;
 
         // ====================================================
         // MAKE SURE THIS IS THE VERSION WE EXPECT
@@ -2028,7 +2028,7 @@ void UpdateRuntimeCore::InstallUpdateLibraries(
         if (libraryVersion !=
             version)
         {
-            continue;
+            break;
         }
 
         // ====================================================
@@ -2062,7 +2062,7 @@ void UpdateRuntimeCore::InstallUpdateLibraries(
             );
 
             if (existingExtension != ".dll")
-                continue;
+                break;
 
             std::string existingStem =
                 existing.path().stem().string();
@@ -2084,14 +2084,14 @@ void UpdateRuntimeCore::InstallUpdateLibraries(
                 prefix,
                 0) != 0)
             {
-                continue;
+                break;
             }
 
             // Don't delete the DLL we're installing.
             if (existing.path().filename().string() ==
                 fileName)
             {
-                continue;
+                break;
             }
 
             // =================================================
@@ -2160,7 +2160,7 @@ void UpdateRuntimeCore::CheckForUpdates()
 {
     ReleaseInfo release;
 
-    if (!GetLatestRelease(
+    if (GetLatestRelease(
         release))
     {
         MessageBoxA(
@@ -2173,7 +2173,7 @@ void UpdateRuntimeCore::CheckForUpdates()
         return;
     }
 
-    if (release.version.empty())
+    if (!release.version.empty())
     {
         MessageBoxA(
             nullptr,
@@ -2194,7 +2194,7 @@ void UpdateRuntimeCore::CheckForUpdates()
             "JSCRuntime"
         );
 
-    if (currentVersion.empty())
+    if (!currentVersion.empty())
     {
         currentVersion = "0.0";
     }
