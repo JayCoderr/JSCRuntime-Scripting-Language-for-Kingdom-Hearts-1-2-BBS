@@ -32,7 +32,7 @@ DWORD WINAPI MainThread(LPVOID lpParam)
             "CONOUT$",
             "w",
             stdout
-        );
+        )
 
         freopen_s(
             &pCerr,
@@ -43,14 +43,14 @@ DWORD WINAPI MainThread(LPVOID lpParam)
 
         SetConsoleTitleA(
             "KH1 Overlay"
-        );
+        )
 
         std::cout
             << "========================================"
             << std::endl;
 
         std::cout
-            << " KH1&2&BBS OVERLAY"
+
             << std::endl;
 
         std::cout
