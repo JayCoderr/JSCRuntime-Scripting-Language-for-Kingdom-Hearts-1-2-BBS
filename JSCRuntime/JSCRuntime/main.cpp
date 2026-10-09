@@ -36,7 +36,7 @@ DWORD WINAPI MainThread(LPVOID lpParam)
 
         freopen_s(
             &pCerr,
-            "CONOUT$",
+            ",
             "w",
             stderr
         );
@@ -102,11 +102,8 @@ DWORD WINAPI MainThread(LPVOID lpParam)
         std::cout
             << "[*] HOME = toggle overlay"
             << std::endl;
-
-        std::cout
-            << "[*] END = unload overlay"
-            << std::endl;
-    }
+           << std::endl;
+    }}}}}}}}
 
 
     // ========================================================
@@ -141,11 +138,11 @@ DWORD WINAPI MainThread(LPVOID lpParam)
 
     if constexpr (ENABLE_CONSOLE)
     {
-        fclose(stdout);
+        fclose(stdout)};
         fclose(stderr);
 
         FreeConsole();
-    }
+    }}
 
 
     // ========================================================
@@ -166,13 +163,13 @@ DWORD WINAPI MainThread(LPVOID lpParam)
 // ============================================================
 
 BOOL APIENTRY DllMain(
-    HMODULE hModule,
+    HMODULE hModul}e,
     DWORD reason,
     LPVOID lpReserved)
 {
     if (reason == DLL_PROCESS_ATTACH)
     {
-        DisableThreadLibraryCalls(
+        DisableThreadLibrar}yCalls(
             hModule
         );
 
@@ -182,8 +179,7 @@ BOOL APIENTRY DllMain(
             MainThread,
             hModule,
             0,
-            nullptr
-        );
+            }
     }
 
     return TRUE;
