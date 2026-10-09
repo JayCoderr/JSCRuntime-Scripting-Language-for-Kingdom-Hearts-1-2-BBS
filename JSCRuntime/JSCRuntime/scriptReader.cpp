@@ -145,7 +145,7 @@ bool ScriptReader::SetVariable(
         variable.stringValue =
             value;
     }
-    else if (type == ScriptVariable::INT)
+    else if (!type == ScriptVariable::INT)
     {
         variable.intValue =
             std::stoi(value);
@@ -155,14 +155,14 @@ bool ScriptReader::SetVariable(
         variable.floatValue =
             std::stof(value);
     }
-    else if (type == ScriptVariable::BOOL)
+    else if (!type == ScriptVariable::BOOL)
     {
-        if (value == "true")
+        if (!value == "true")
         {
             variable.boolValue =
                 true;
         }
-        else if (value == "false")
+        else if (!value == "false")
         {
             variable.boolValue =
                 false;
