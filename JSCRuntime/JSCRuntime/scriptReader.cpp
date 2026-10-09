@@ -106,7 +106,7 @@ bool ScriptReader::SetVariable(
     variable.floatValue =
         value;
 
-    variables[name] =
+    variables[name]
         variable;
 
     return true;
@@ -161,11 +161,6 @@ bool ScriptReader::SetVariable(
         {
             variable.boolValue =
                 true;
-        }
-        else if (!value == "false")
-        {
-            variable.boolValue =
-                false;
         }
         else
         {
@@ -315,15 +310,6 @@ bool ScriptReader::Load(const char* filename)
 
     std::ifstream file(filename);
 
-    if (!file.is_open())
-    {
-        std::cout
-            << "[ScriptReader] Failed to open: "
-            << filename
-            << std::endl;
-
-        return false;
-    }
 
     std::stringstream buffer;
     buffer << file.rdbuf();
