@@ -86,8 +86,6 @@ namespace
     // STATE
     // ========================================================
 
-    bool g_visible = false;
-
     const char* WINDOW_CLASS =
         "KH1_External_DX11_Overlay";
 
@@ -313,30 +311,19 @@ bool FindGameWindow()
     return true;
 }
 
-
 // ============================================================
 // CREATE OVERLAY WINDOW
 // ============================================================
-
 bool CreateOverlayWindow()
 {
-    HINSTANCE hInstance =
-        GetModuleHandleA(nullptr);
+    HINSTANCE hInstance = GetModuleHandleA(nullptr);
 
     WNDCLASSEXA wc{};
-
-    wc.cbSize =
-        sizeof(WNDCLASSEXA);
-
-    wc.style =
-        CS_HREDRAW |
-        CS_VREDRAW;
+    wc.cbSize = sizeof(WNDCLASSEXA);
+    wc.style = CS_HREDRAW | CS_VREDRAW;
 
     wc.lpfnWndProc =
-        [](HWND hWnd,
-            UINT msg,
-            WPARAM wParam,
-            LPARAM lParam) -> LRESULT
+        [](HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) -> LRESULT
         {
             switch (msg)
             {
@@ -349,31 +336,24 @@ bool CreateOverlayWindow()
             case WM_SETCURSOR:
                 return TRUE;
 
-            case WM_MOUSEMOVE:
-            case WM_LBUTTONDOWN:
-            case WM_LBUTTONUP:
-            case WM_RBUTTONDOWN:
-            case WM_RBUTTONUP:
-            case WM_MBUTTONDOWN:
-            case WM_MBUTTONUP:
-            case WM_MOUSEWHEEL:
-            case WM_MOUSEHWHEEL:
-                return 0;
-
             case WM_ERASEBKGND:
                 return 1;
 
             case WM_ACTIVATE:
-                return 0;
-
             case WM_SETFOCUS:
-                return 0;
-
             case WM_KILLFOCUS:
                 return 0;
 
             case WM_DESTROY:
                 return 0;
+
+            case WM_NCDESTROY:
+                return DefWindowProcA(
+                    hWnd,
+                    msg,
+                    wParam,
+                    lParam
+                );
             }
 
             return DefWindowProcA(
@@ -384,13 +364,11 @@ bool CreateOverlayWindow()
             );
         };
 
-    wc.lpszClassName =
-        WINDOW_CLASS;
+    wc.lpszClassName = WINDOW_CLASS;
 
     if (!RegisterClassExA(&wc))
     {
-        DWORD error =
-            GetLastError();
+        DWORD error = GetLastError();
 
         if (error != ERROR_CLASS_ALREADY_EXISTS)
         {
@@ -403,62 +381,69 @@ bool CreateOverlayWindow()
         }
     }
 
-    RECT rect{};
-
-    if (!GetWindowRect(
-        g_gameWindow,
-        &rect))
+    // Verify the existing game window.
+    if (!g_gameWindow || !IsWindow(g_gameWindow))
     {
         std::cout
-            << "[-] GetWindowRect failed."
+            << "[-] Game HWND is invalid."
             << std::endl;
 
         return false;
     }
 
-    int width =
-        rect.right -
-        rect.left;
+    RECT rect{};
 
-    int height =
-        rect.bottom -
-        rect.top;
+    if (!GetClientRect(g_gameWindow, &rect))
+    {
+        std::cout
+            << "[-] GetClientRect failed: "
+            << GetLastError()
+            << std::endl;
 
-    // ========================================================
-    // DCOMP WINDOW
-    //
-    // KH1 is the owner of the overlay.
-    //
-    // DO NOT ADD:
-    //
-    //     WS_EX_TRANSPARENT
-    //     WS_EX_LAYERED
-    //
-    // ========================================================
+        return false;
+    }
 
-    g_overlayWindow =
-        CreateWindowExA(
-            WS_EX_NOACTIVATE |
-            WS_EX_TOOLWINDOW,
+    POINT topLeft{ rect.left, rect.top };
 
-            WINDOW_CLASS,
+    if (!ClientToScreen(g_gameWindow, &topLeft))
+    {
+        std::cout
+            << "[-] ClientToScreen failed: "
+            << GetLastError()
+            << std::endl;
 
-            "KH1 External DX11 Overlay",
+        return false;
+    }
 
-            WS_POPUP,
+    const int width = rect.right - rect.left;
+    const int height = rect.bottom - rect.top;
 
-            rect.left,
-            rect.top,
+    const int overlayX = topLeft.x;
+    const int overlayY = topLeft.y;
+    const int overlayWidth = width;
+    const int overlayHeight = height;
 
-            width,
-            height,
+    // Create the overlay as a separate, click-through window.
+    g_overlayWindow = CreateWindowExA(
+        WS_EX_LAYERED |
+        WS_EX_TRANSPARENT |
+        WS_EX_NOACTIVATE |
+        WS_EX_TOOLWINDOW,
 
-            g_gameWindow,
-            nullptr,
+        WINDOW_CLASS,
+        "KH1 External DX11 Overlay",
+        WS_POPUP,
 
-            hInstance,
-            nullptr
-        );
+        overlayX,
+        overlayY,
+        overlayWidth,
+        overlayHeight,
+
+        g_gameWindow,
+        nullptr,
+        hInstance,
+        nullptr
+    );
 
     if (!g_overlayWindow)
     {
@@ -470,122 +455,111 @@ bool CreateOverlayWindow()
         return false;
     }
 
-    // ========================================================
-    // MAKE SURE THE OVERLAY IS NOT TOPMOST
-    //
-    // This is done once when the HWND is created.
-    // ========================================================
-
     if (!SetWindowPos(
         g_overlayWindow,
         HWND_NOTOPMOST,
-        0,
-        0,
-        0,
-        0,
-        SWP_NOMOVE |
-        SWP_NOSIZE |
-        SWP_NOACTIVATE))
+        overlayX,
+        overlayY,
+        overlayWidth,
+        overlayHeight,
+        SWP_NOACTIVATE |
+        SWP_SHOWWINDOW))
     {
         std::cout
-            << "[-] SetWindowPos(HWND_NOTOPMOST) failed: "
+            << "[-] SetWindowPos failed: "
             << GetLastError()
             << std::endl;
+
+        DestroyWindow(g_overlayWindow);
+        g_overlayWindow = nullptr;
+
+        return false;
     }
 
-    // ========================================================
-    // SHOW WITHOUT ACTIVATING
-    // ========================================================
-
-    ShowWindow(
-        g_overlayWindow,
-        SW_SHOWNOACTIVATE
-    );
-
-    UpdateWindow(
-        g_overlayWindow
-    );
-
-    // ========================================================
-    // DO NOT CALL:
-    //
-    // SetForegroundWindow()
-    // SetFocus()
-    //
-    // The overlay remains non-activating.
-    // ========================================================
+    ShowWindow(g_overlayWindow, SW_SHOWNOACTIVATE);
+    UpdateWindow(g_overlayWindow);
 
     std::cout
-        << "[+] Overlay HWND created"
-        << std::endl;
-
-    std::cout
-        << "[+] Overlay HWND: "
+        << "[+] Overlay HWND created: "
         << g_overlayWindow
         << std::endl;
 
     std::cout
-        << "[+] Overlay owner: "
+        << "[+] Game HWND: "
         << g_gameWindow
+        << std::endl;
+
+    std::cout
+        << "[+] Overlay dimensions: "
+        << overlayWidth << "x" << overlayHeight
+        << std::endl;
+
+    std::cout
+        << "[+] Click-through enabled"
+        << std::endl;
+
+    std::cout
+        << "[+] Overlay is not topmost"
         << std::endl;
 
     return true;
 }
-
 // ============================================================
 // CREATE RENDER TARGET
 // ============================================================
 
 bool CreateRenderTarget()
 {
-    ID3D11Texture2D* backBuffer =
-        nullptr;
+    if (!g_swapChain || !g_device)
+        return false;
 
-    HRESULT hr =
-        g_swapChain->GetBuffer(
-            0,
-            __uuidof(ID3D11Texture2D),
-            reinterpret_cast<void**>(
-                &backBuffer
-                )
-        );
+    if (g_renderTarget)
+    {
+        g_renderTarget->Release();
+        g_renderTarget = nullptr;
+    }
+
+    ID3D11Texture2D* backBuffer = nullptr;
+
+    HRESULT hr = g_swapChain->GetBuffer(
+        0,
+        __uuidof(ID3D11Texture2D),
+        reinterpret_cast<void**>(&backBuffer)
+    );
 
     if (FAILED(hr))
     {
-        std::cout
-            << "[-] SwapChain GetBuffer failed: 0x"
-            << std::hex
-            << hr
-            << std::dec
-            << std::endl;
+        std::cout << "[-] SwapChain GetBuffer failed: 0x"
+            << std::hex << hr << std::dec << std::endl;
 
         return false;
     }
 
-    hr =
-        g_device->CreateRenderTargetView(
-            backBuffer,
-            nullptr,
-            &g_renderTarget
-        );
+    hr = g_device->CreateRenderTargetView(
+        backBuffer,
+        nullptr,
+        &g_renderTarget
+    );
 
     backBuffer->Release();
+    backBuffer = nullptr;
 
     if (FAILED(hr))
     {
-        std::cout
-            << "[-] CreateRenderTargetView failed: 0x"
-            << std::hex
-            << hr
-            << std::dec
-            << std::endl;
+        if (g_renderTarget)
+        {
+            g_renderTarget->Release();
+            g_renderTarget = nullptr;
+        }
+
+        std::cout << "[-] CreateRenderTargetView failed: 0x"
+            << std::hex << hr << std::dec << std::endl;
 
         return false;
     }
 
     return true;
 }
-
 
 // ============================================================
 // CREATE DIRECTCOMPOSITION
@@ -1916,7 +1890,8 @@ bool DownloadImageFromUrl(
             << localImagePath.string()
             << std::endl;
 
-        // The download itself succeeded, so still return true.
+        // The download it
+        // succeeded, so still return true.
     }
     else
     {
@@ -2046,10 +2021,6 @@ bool LoadImageData(
     return true;
 }
 
-// ============================================================
-// CREATE TEST RECTANGLE
-// ============================================================
-
 bool CreateRectangle(
     const char* imageSource,
     float x,
@@ -2057,7 +2028,8 @@ bool CreateRectangle(
     float width,
     float height,
     float alpha,
-    int sort
+    int sort,
+    const char* Parent
 )
 {
     if (!g_context ||
@@ -2088,10 +2060,10 @@ bool CreateRectangle(
         std::vector<GifFrame> frames;
 
         size_t currentFrame = 0;
-
         ULONGLONG lastFrameTime = 0;
 
         bool loaded = false;
+        bool textureFrameUploaded = false;
 
         ~ImageCache()
         {
@@ -2109,20 +2081,11 @@ bool CreateRectangle(
         }
     };
 
-    static std::unordered_map<
-        std::string,
-        ImageCache
-    > imageCache;
+    static std::unordered_map<std::string, ImageCache> imageCache;
 
-    const std::string source =
-        imageSource;
+    const std::string source = imageSource;
 
-    // ========================================================
-    // FIND IMAGE IN CACHE
-    // ========================================================
-
-    auto cacheIt =
-        imageCache.find(source);
+    auto cacheIt = imageCache.find(source);
 
     // ========================================================
     // LOAD IMAGE IF NOT CACHED
@@ -2130,27 +2093,15 @@ bool CreateRectangle(
 
     if (cacheIt == imageCache.end())
     {
-        auto result =
-            imageCache.emplace(
-                source,
-                ImageCache{}
-            );
+        auto result = imageCache.emplace(source, ImageCache{});
+        cacheIt = result.first;
 
-        cacheIt =
-            result.first;
-
-        ImageCache& image =
-            cacheIt->second;
-
-        // ====================================================
-        // LOAD IMAGE
-        // ====================================================
+        ImageCache& image = cacheIt->second;
 
         std::vector<BYTE> imageData;
 
-        if (!LoadImageData(
-            imageSource,
-            imageData))
+        if (!LoadImageData(imageSource, imageData) ||
+            imageData.empty())
         {
             std::cout
                 << "[-] Failed to load image: "
@@ -2158,18 +2109,6 @@ bool CreateRectangle(
                 << std::endl;
 
             imageCache.erase(cacheIt);
-
-            return false;
-        }
-
-        if (imageData.empty())
-        {
-            std::cout
-                << "[-] Image data is empty"
-                << std::endl;
-
-            imageCache.erase(cacheIt);
-
             return false;
         }
 
@@ -2185,25 +2124,21 @@ bool CreateRectangle(
 
         IWICImagingFactory* wicFactory = nullptr;
 
-        HRESULT hr =
-            CoCreateInstance(
-                CLSID_WICImagingFactory,
-                nullptr,
-                CLSCTX_INPROC_SERVER,
-                IID_PPV_ARGS(&wicFactory)
-            );
+        HRESULT hr = CoCreateInstance(
+            CLSID_WICImagingFactory,
+            nullptr,
+            CLSCTX_INPROC_SERVER,
+            IID_PPV_ARGS(&wicFactory)
+        );
 
         if (FAILED(hr))
         {
             std::cout
-                << "[-] CreateRectangle: WIC factory failed: 0x"
-                << std::hex
-                << hr
-                << std::dec
+                << "[-] WIC factory failed: 0x"
+                << std::hex << hr << std::dec
                 << std::endl;
 
             imageCache.erase(cacheIt);
-
             return false;
         }
 
@@ -2213,61 +2148,33 @@ bool CreateRectangle(
 
         IWICStream* wicStream = nullptr;
 
-        hr =
-            wicFactory->CreateStream(
-                &wicStream
-            );
+        hr = wicFactory->CreateStream(&wicStream);
 
         if (FAILED(hr))
         {
-            std::cout
-                << "[-] CreateRectangle: CreateStream failed: 0x"
-                << std::hex
-                << hr
-                << std::dec
-                << std::endl;
-
             wicFactory->Release();
-
             imageCache.erase(cacheIt);
-
             return false;
         }
 
         if (imageData.size() > 0xFFFFFFFFULL)
         {
-            std::cout
-                << "[-] Image is too large"
-                << std::endl;
-
             wicStream->Release();
             wicFactory->Release();
-
             imageCache.erase(cacheIt);
-
             return false;
         }
 
-        hr =
-            wicStream->InitializeFromMemory(
-                imageData.data(),
-                static_cast<DWORD>(imageData.size())
-            );
+        hr = wicStream->InitializeFromMemory(
+            imageData.data(),
+            static_cast<DWORD>(imageData.size())
+        );
 
         if (FAILED(hr))
         {
-            std::cout
-                << "[-] Could not initialize WIC stream: 0x"
-                << std::hex
-                << hr
-                << std::dec
-                << std::endl;
-
             wicStream->Release();
             wicFactory->Release();
-
             imageCache.erase(cacheIt);
-
             return false;
         }
 
@@ -2277,51 +2184,31 @@ bool CreateRectangle(
 
         IWICBitmapDecoder* decoder = nullptr;
 
-        hr =
-            wicFactory->CreateDecoderFromStream(
-                wicStream,
-                nullptr,
-                WICDecodeMetadataCacheOnLoad,
-                &decoder
-            );
+        hr = wicFactory->CreateDecoderFromStream(
+            wicStream,
+            nullptr,
+            WICDecodeMetadataCacheOnLoad,
+            &decoder
+        );
 
         if (FAILED(hr))
         {
-            std::cout
-                << "[-] Could not create WIC decoder: 0x"
-                << std::hex
-                << hr
-                << std::dec
-                << std::endl;
-
             wicStream->Release();
             wicFactory->Release();
-
             imageCache.erase(cacheIt);
-
             return false;
         }
 
         UINT frameCount = 0;
 
-        hr =
-            decoder->GetFrameCount(
-                &frameCount
-            );
+        hr = decoder->GetFrameCount(&frameCount);
 
-        if (FAILED(hr) ||
-            frameCount == 0)
+        if (FAILED(hr) || frameCount == 0)
         {
-            std::cout
-                << "[-] Could not get image frame count"
-                << std::endl;
-
             decoder->Release();
             wicStream->Release();
             wicFactory->Release();
-
             imageCache.erase(cacheIt);
-
             return false;
         }
 
@@ -2331,7 +2218,7 @@ bool CreateRectangle(
             << std::endl;
 
         // ====================================================
-        // DECODE ALL FRAMES
+        // DECODE FRAMES
         // ====================================================
 
         for (UINT frameIndex = 0;
@@ -2340,34 +2227,17 @@ bool CreateRectangle(
         {
             IWICBitmapFrameDecode* frame = nullptr;
 
-            hr =
-                decoder->GetFrame(
-                    frameIndex,
-                    &frame
-                );
+            hr = decoder->GetFrame(frameIndex, &frame);
 
             if (FAILED(hr))
             {
-                std::cout
-                    << "[-] Could not get frame "
-                    << frameIndex
-                    << ": 0x"
-                    << std::hex
-                    << hr
-                    << std::dec
-                    << std::endl;
-
                 continue;
             }
 
             UINT imageWidth = 0;
             UINT imageHeight = 0;
 
-            hr =
-                frame->GetSize(
-                    &imageWidth,
-                    &imageHeight
-                );
+            hr = frame->GetSize(&imageWidth, &imageHeight);
 
             if (FAILED(hr) ||
                 imageWidth == 0 ||
@@ -2379,19 +2249,22 @@ bool CreateRectangle(
 
             if (frameIndex == 0)
             {
-                image.width =
-                    imageWidth;
+                image.width = imageWidth;
+                image.height = imageHeight;
+            }
 
-                image.height =
-                    imageHeight;
+            // The current texture implementation requires
+            // every animation frame to have the same size.
+            if (imageWidth != image.width ||
+                imageHeight != image.height)
+            {
+                frame->Release();
+                continue;
             }
 
             IWICFormatConverter* converter = nullptr;
 
-            hr =
-                wicFactory->CreateFormatConverter(
-                    &converter
-                );
+            hr = wicFactory->CreateFormatConverter(&converter);
 
             if (FAILED(hr))
             {
@@ -2399,15 +2272,14 @@ bool CreateRectangle(
                 continue;
             }
 
-            hr =
-                converter->Initialize(
-                    frame,
-                    GUID_WICPixelFormat32bppBGRA,
-                    WICBitmapDitherTypeNone,
-                    nullptr,
-                    0.0,
-                    WICBitmapPaletteTypeCustom
-                );
+            hr = converter->Initialize(
+                frame,
+                GUID_WICPixelFormat32bppBGRA,
+                WICBitmapDitherTypeNone,
+                nullptr,
+                0.0,
+                WICBitmapPaletteTypeCustom
+            );
 
             if (FAILED(hr))
             {
@@ -2416,43 +2288,28 @@ bool CreateRectangle(
                 continue;
             }
 
-            const UINT stride =
-                imageWidth * 4;
+            const UINT stride = imageWidth * 4;
+            const UINT bufferSize = stride * imageHeight;
 
-            const UINT bufferSize =
-                stride * imageHeight;
+            std::vector<BYTE> pixels(bufferSize);
 
-            std::vector<BYTE> pixels(
-                bufferSize
+            hr = converter->CopyPixels(
+                nullptr,
+                stride,
+                bufferSize,
+                pixels.data()
             );
-
-            hr =
-                converter->CopyPixels(
-                    nullptr,
-                    stride,
-                    bufferSize,
-                    pixels.data()
-                );
 
             if (SUCCEEDED(hr))
             {
                 GifFrame gifFrame{};
 
-                gifFrame.width =
-                    imageWidth;
+                gifFrame.width = imageWidth;
+                gifFrame.height = imageHeight;
+                gifFrame.delayMs = 100;
+                gifFrame.pixels = std::move(pixels);
 
-                gifFrame.height =
-                    imageHeight;
-
-                gifFrame.delayMs =
-                    100;
-
-                gifFrame.pixels =
-                    std::move(pixels);
-
-                image.frames.push_back(
-                    std::move(gifFrame)
-                );
+                image.frames.push_back(std::move(gifFrame));
             }
 
             converter->Release();
@@ -2464,17 +2321,18 @@ bool CreateRectangle(
         wicFactory->Release();
 
         // ====================================================
-        // VERIFY FRAMES
+        // VERIFY DECODED FRAMES
         // ====================================================
 
-        if (image.frames.empty())
+        if (image.frames.empty() ||
+            image.width == 0 ||
+            image.height == 0)
         {
             std::cout
-                << "[-] No image frames decoded"
+                << "[-] No valid image frames decoded"
                 << std::endl;
 
             imageCache.erase(cacheIt);
-
             return false;
         }
 
@@ -2496,47 +2354,30 @@ bool CreateRectangle(
 
         D3D11_TEXTURE2D_DESC textureDesc{};
 
-        textureDesc.Width =
-            image.width;
-
-        textureDesc.Height =
-            image.height;
-
+        textureDesc.Width = image.width;
+        textureDesc.Height = image.height;
         textureDesc.MipLevels = 1;
         textureDesc.ArraySize = 1;
-
-        textureDesc.Format =
-            DXGI_FORMAT_B8G8R8A8_UNORM;
-
+        textureDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
         textureDesc.SampleDesc.Count = 1;
+        textureDesc.Usage = D3D11_USAGE_DYNAMIC;
+        textureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+        textureDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 
-        textureDesc.Usage =
-            D3D11_USAGE_DYNAMIC;
-
-        textureDesc.BindFlags =
-            D3D11_BIND_SHADER_RESOURCE;
-
-        textureDesc.CPUAccessFlags =
-            D3D11_CPU_ACCESS_WRITE;
-
-        hr =
-            g_device->CreateTexture2D(
-                &textureDesc,
-                nullptr,
-                &image.texture
-            );
+        hr = g_device->CreateTexture2D(
+            &textureDesc,
+            nullptr,
+            &image.texture
+        );
 
         if (FAILED(hr))
         {
             std::cout
                 << "[-] Could not create animated texture: 0x"
-                << std::hex
-                << hr
-                << std::dec
+                << std::hex << hr << std::dec
                 << std::endl;
 
             imageCache.erase(cacheIt);
-
             return false;
         }
 
@@ -2544,37 +2385,27 @@ bool CreateRectangle(
         // CREATE SHADER RESOURCE VIEW
         // ====================================================
 
-        hr =
-            g_device->CreateShaderResourceView(
-                image.texture,
-                nullptr,
-                &image.textureView
-            );
+        hr = g_device->CreateShaderResourceView(
+            image.texture,
+            nullptr,
+            &image.textureView
+        );
 
         if (FAILED(hr))
         {
             std::cout
                 << "[-] Could not create shader resource view: 0x"
-                << std::hex
-                << hr
-                << std::dec
+                << std::hex << hr << std::dec
                 << std::endl;
 
             imageCache.erase(cacheIt);
-
             return false;
         }
 
-        // ====================================================
-        // RESET ANIMATION
-        // ====================================================
-
         image.currentFrame = 0;
-
-        image.lastFrameTime =
-            GetTickCount64();
-
+        image.lastFrameTime = GetTickCount64();
         image.loaded = true;
+        image.textureFrameUploaded = false;
 
         std::cout
             << "[IMAGE] Texture created"
@@ -2585,8 +2416,7 @@ bool CreateRectangle(
     // GET CACHED IMAGE
     // ========================================================
 
-    ImageCache& image =
-        cacheIt->second;
+    ImageCache& image = cacheIt->second;
 
     if (!image.loaded ||
         !image.texture ||
@@ -2600,49 +2430,41 @@ bool CreateRectangle(
     // UPDATE ANIMATION
     // ========================================================
 
-    const ULONGLONG now =
-        GetTickCount64();
+    const ULONGLONG now = GetTickCount64();
 
-    if (image.currentFrame >=
-        image.frames.size())
+    if (image.currentFrame >= image.frames.size())
     {
         image.currentFrame = 0;
     }
 
-    UINT delay =
-        image.frames[
-            image.currentFrame
-        ].delayMs;
+    UINT delay = image.frames[image.currentFrame].delayMs;
 
     if (delay == 0)
     {
         delay = 100;
     }
 
-    if (now -
-        image.lastFrameTime >=
-        delay)
+    bool frameChanged = false;
+
+    if (now - image.lastFrameTime >= delay)
     {
         image.currentFrame++;
 
-        if (image.currentFrame >=
-            image.frames.size())
+        if (image.currentFrame >= image.frames.size())
         {
             image.currentFrame = 0;
         }
 
-        image.lastFrameTime =
-            now;
+        image.lastFrameTime = now;
+        frameChanged = true;
     }
 
     // ========================================================
-    // COPY CURRENT FRAME TO GPU
+    // VALIDATE CURRENT FRAME
     // ========================================================
 
     const GifFrame& currentFrame =
-        image.frames[
-            image.currentFrame
-        ];
+        image.frames[image.currentFrame];
 
     if (currentFrame.width != image.width ||
         currentFrame.height != image.height)
@@ -2651,24 +2473,23 @@ bool CreateRectangle(
     }
 
     const size_t requiredPixels =
-        static_cast<size_t>(
-            image.width
-            ) *
-        static_cast<size_t>(
-            image.height
-            ) *
-        4;
+        static_cast<size_t>(image.width) *
+        static_cast<size_t>(image.height) * 4;
 
-    if (currentFrame.pixels.size() <
-        requiredPixels)
+    if (currentFrame.pixels.size() < requiredPixels)
     {
         return false;
     }
 
-    D3D11_MAPPED_SUBRESOURCE mapped{};
+    // ========================================================
+    // UPLOAD ONLY WHEN FRAME CHANGES
+    // ========================================================
 
-    HRESULT hr =
-        g_context->Map(
+    if (frameChanged || !image.textureFrameUploaded)
+    {
+        D3D11_MAPPED_SUBRESOURCE mapped{};
+
+        HRESULT hr = g_context->Map(
             image.texture,
             0,
             D3D11_MAP_WRITE_DISCARD,
@@ -2676,32 +2497,32 @@ bool CreateRectangle(
             &mapped
         );
 
-    if (SUCCEEDED(hr))
-    {
-        const UINT rowBytes =
-            image.width * 4;
+        if (FAILED(hr))
+        {
+            std::cout
+                << "[-] Texture Map failed: 0x"
+                << std::hex << hr << std::dec
+                << std::endl;
 
-        for (UINT row = 0;
-            row < image.height;
-            ++row)
+            return false;
+        }
+
+        const UINT rowBytes = image.width * 4;
+
+        for (UINT row = 0; row < image.height; ++row)
         {
             memcpy(
-                static_cast<BYTE*>(
-                    mapped.pData
-                    ) +
+                static_cast<BYTE*>(mapped.pData) +
                 row * mapped.RowPitch,
-
                 currentFrame.pixels.data() +
                 row * rowBytes,
-
                 rowBytes
             );
         }
 
-        g_context->Unmap(
-            image.texture,
-            0
-        );
+        g_context->Unmap(image.texture, 0);
+
+        image.textureFrameUploaded = true;
     }
 
     // ========================================================
@@ -2710,9 +2531,7 @@ bool CreateRectangle(
 
     RECT rect{};
 
-    if (!GetClientRect(
-        g_overlayWindow,
-        &rect))
+    if (!GetClientRect(g_overlayWindow, &rect))
     {
         std::cout
             << "[-] CreateRectangle: GetClientRect failed"
@@ -2722,16 +2541,10 @@ bool CreateRectangle(
     }
 
     const float screenWidth =
-        static_cast<float>(
-            rect.right -
-            rect.left
-            );
+        static_cast<float>(rect.right - rect.left);
 
     const float screenHeight =
-        static_cast<float>(
-            rect.bottom -
-            rect.top
-            );
+        static_cast<float>(rect.bottom - rect.top);
 
     if (screenWidth <= 0.0f ||
         screenHeight <= 0.0f ||
@@ -2752,30 +2565,20 @@ bool CreateRectangle(
         alpha = 1.0f;
 
     // ========================================================
-    // PIXEL COORDINATES
-    // ========================================================
-
-    const float x0 = x;
-    const float y0 = y;
-
-    const float x1 = x + width;
-    const float y1 = y + height;
-
-    // ========================================================
-    // PIXELS -> NDC
+    // PIXELS TO NDC
     // ========================================================
 
     const float ndcLeft =
-        (x0 / screenWidth) * 2.0f - 1.0f;
+        (x / screenWidth) * 2.0f - 1.0f;
 
     const float ndcRight =
-        (x1 / screenWidth) * 2.0f - 1.0f;
+        ((x + width) / screenWidth) * 2.0f - 1.0f;
 
     const float ndcTop =
-        1.0f - (y0 / screenHeight) * 2.0f;
+        1.0f - (y / screenHeight) * 2.0f;
 
     const float ndcBottom =
-        1.0f - (y1 / screenHeight) * 2.0f;
+        1.0f - ((y + height) / screenHeight) * 2.0f;
 
     // ========================================================
     // VERTICES
@@ -2784,103 +2587,66 @@ bool CreateRectangle(
     Vertex vertices[4] =
     {
         {
-            ndcLeft,
-            ndcTop,
-            1.0f,
-            1.0f,
-            1.0f,
-            alpha,
-            0.0f,
-            0.0f
+            ndcLeft, ndcTop,
+            1.0f, 1.0f, 1.0f, alpha,
+            0.0f, 0.0f
         },
-
         {
-            ndcRight,
-            ndcTop,
-            1.0f,
-            1.0f,
-            1.0f,
-            alpha,
-            1.0f,
-            0.0f
+            ndcRight, ndcTop,
+            1.0f, 1.0f, 1.0f, alpha,
+            1.0f, 0.0f
         },
-
         {
-            ndcLeft,
-            ndcBottom,
-            1.0f,
-            1.0f,
-            1.0f,
-            alpha,
-            0.0f,
-            1.0f
+            ndcLeft, ndcBottom,
+            1.0f, 1.0f, 1.0f, alpha,
+            0.0f, 1.0f
         },
-
         {
-            ndcRight,
-            ndcBottom,
-            1.0f,
-            1.0f,
-            1.0f,
-            alpha,
-            1.0f,
-            1.0f
+            ndcRight, ndcBottom,
+            1.0f, 1.0f, 1.0f, alpha,
+            1.0f, 1.0f
         }
     };
 
     // ========================================================
-    // VERTEX BUFFER
+    // CREATE VERTEX BUFFER
     // ========================================================
 
     D3D11_BUFFER_DESC bufferDesc{};
 
-    bufferDesc.Usage =
-        D3D11_USAGE_DEFAULT;
-
-    bufferDesc.ByteWidth =
-        sizeof(vertices);
-
-    bufferDesc.BindFlags =
-        D3D11_BIND_VERTEX_BUFFER;
+    bufferDesc.Usage = D3D11_USAGE_DEFAULT;
+    bufferDesc.ByteWidth = sizeof(vertices);
+    bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 
     D3D11_SUBRESOURCE_DATA vertexData{};
-
-    vertexData.pSysMem =
-        vertices;
+    vertexData.pSysMem = vertices;
 
     ID3D11Buffer* vertexBuffer = nullptr;
 
-    hr =
-        g_device->CreateBuffer(
-            &bufferDesc,
-            &vertexData,
-            &vertexBuffer
-        );
+    HRESULT hr = g_device->CreateBuffer(
+        &bufferDesc,
+        &vertexData,
+        &vertexBuffer
+    );
 
     if (FAILED(hr))
     {
         std::cout
             << "[-] CreateRectangle: CreateBuffer failed: 0x"
-            << std::hex
-            << hr
-            << std::dec
+            << std::hex << hr << std::dec
             << std::endl;
 
         return false;
     }
 
     // ========================================================
-    // BIND
+    // BIND PIPELINE
     // ========================================================
 
-    UINT stride =
-        sizeof(Vertex);
-
+    UINT stride = sizeof(Vertex);
     UINT offset = 0;
 
-    g_context->IASetInputLayout(
-        g_inputLayout
-    );
+    g_context->IASetInputLayout(g_inputLayout);
 
     g_context->IASetVertexBuffers(
         0,
@@ -2894,17 +2660,8 @@ bool CreateRectangle(
         D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP
     );
 
-    g_context->VSSetShader(
-        g_vertexShader,
-        nullptr,
-        0
-    );
-
-    g_context->PSSetShader(
-        g_pixelShader,
-        nullptr,
-        0
-    );
+    g_context->VSSetShader(g_vertexShader, nullptr, 0);
+    g_context->PSSetShader(g_pixelShader, nullptr, 0);
 
     g_context->PSSetShaderResources(
         0,
@@ -2922,17 +2679,13 @@ bool CreateRectangle(
     // DRAW
     // ========================================================
 
-    g_context->Draw(
-        4,
-        0
-    );
+    g_context->Draw(4, 0);
 
     // ========================================================
     // UNBIND
     // ========================================================
 
-    ID3D11ShaderResourceView* nullSRV =
-        nullptr;
+    ID3D11ShaderResourceView* nullSRV = nullptr;
 
     g_context->PSSetShaderResources(
         0,
@@ -3378,11 +3131,12 @@ bool CreateTestResources()
 
     return true;
 }
+
 // ============================================================
 // DRAW TEST
 // ============================================================
 
-void DrawTest()
+void DrawSceenText()
 {
     if (!g_context ||
         !g_renderTarget ||
@@ -3402,7 +3156,7 @@ void DrawTest()
         &clientRect))
     {
         std::cout
-            << "[-] GetClientRect failed in DrawTest"
+            << "[-] GetClientRect failed in DrawSceenText"
             << std::endl;
 
         return;
@@ -3451,13 +3205,8 @@ void DrawTest()
 
     viewport.TopLeftX = 0.0f;
     viewport.TopLeftY = 0.0f;
-
-    viewport.Width =
-        screenWidth;
-
-    viewport.Height =
-        screenHeight;
-
+    viewport.Width = screenWidth;
+    viewport.Height = screenHeight;
     viewport.MinDepth = 0.0f;
     viewport.MaxDepth = 1.0f;
 
@@ -3486,33 +3235,22 @@ void DrawTest()
     {
         D3D11_BLEND_DESC blendDesc{};
 
-        blendDesc.AlphaToCoverageEnable =
-            FALSE;
+        blendDesc.AlphaToCoverageEnable = FALSE;
+        blendDesc.IndependentBlendEnable = FALSE;
 
-        blendDesc.IndependentBlendEnable =
-            FALSE;
-
-        blendDesc.RenderTarget[0].BlendEnable =
-            TRUE;
-
+        blendDesc.RenderTarget[0].BlendEnable = TRUE;
         blendDesc.RenderTarget[0].SrcBlend =
             D3D11_BLEND_SRC_ALPHA;
-
         blendDesc.RenderTarget[0].DestBlend =
             D3D11_BLEND_INV_SRC_ALPHA;
-
         blendDesc.RenderTarget[0].BlendOp =
             D3D11_BLEND_OP_ADD;
-
         blendDesc.RenderTarget[0].SrcBlendAlpha =
             D3D11_BLEND_ONE;
-
         blendDesc.RenderTarget[0].DestBlendAlpha =
             D3D11_BLEND_INV_SRC_ALPHA;
-
         blendDesc.RenderTarget[0].BlendOpAlpha =
             D3D11_BLEND_OP_ADD;
-
         blendDesc.RenderTarget[0].RenderTargetWriteMask =
             D3D11_COLOR_WRITE_ENABLE_ALL;
 
@@ -3540,179 +3278,6 @@ void DrawTest()
         nullptr,
         0xFFFFFFFF
     );
-
-    // ========================================================
-    // SCRIPT
-    // ========================================================
-
-    static bool scriptLoaded = false;
-
-    static std::filesystem::path scriptFile;
-
-    static std::filesystem::file_time_type
-        scriptLastWriteTime{};
-
-    try
-    {
-        // ====================================================
-        // FIND SCRIPT
-        // ====================================================
-
-        if (!scriptLoaded)
-        {
-            const std::filesystem::path
-                processDirectory =
-                std::filesystem::current_path();
-
-            const std::filesystem::path
-                scriptDirectory =
-                processDirectory /
-                "raw" /
-                "scripts";
-
-            if (!std::filesystem::exists(
-                scriptDirectory))
-            {
-                std::cout
-                    << "[-] Script directory not found: "
-                    << scriptDirectory.string()
-                    << std::endl;
-
-                return;
-            }
-
-            if (!std::filesystem::is_directory(
-                scriptDirectory))
-            {
-                std::cout
-                    << "[-] Script path is not a directory: "
-                    << scriptDirectory.string()
-                    << std::endl;
-
-                return;
-            }
-
-            for (const auto& entry :
-                std::filesystem::directory_iterator(
-                    scriptDirectory))
-            {
-                if (!entry.is_regular_file())
-                    continue;
-
-                scriptFile =
-                    entry.path();
-
-                break;
-            }
-
-            if (scriptFile.empty())
-            {
-                std::cout
-                    << "[-] No script file found in: "
-                    << scriptDirectory.string()
-                    << std::endl;
-
-                return;
-            }
-
-            // =================================================
-            // FIRST LOAD
-            // =================================================
-
-            if (!menuStructure::Load(
-                scriptFile.string().c_str()))
-            {
-                std::cout
-                    << "[-] Failed to load script: "
-                    << scriptFile.string()
-                    << std::endl;
-
-                scriptFile.clear();
-
-                return;
-            }
-
-            scriptLastWriteTime =
-                std::filesystem::last_write_time(
-                    scriptFile
-                );
-
-            scriptLoaded = true;
-
-            std::cout
-                << "[Script] Loaded: "
-                << scriptFile.string()
-                << std::endl;
-        }
-
-        // ====================================================
-        // HOT RELOAD
-        // ====================================================
-
-        if (scriptLoaded &&
-            !scriptFile.empty())
-        {
-            if (!std::filesystem::exists(
-                scriptFile))
-            {
-                std::cout
-                    << "[-] Script file no longer exists: "
-                    << scriptFile.string()
-                    << std::endl;
-
-                scriptLoaded = false;
-                scriptFile.clear();
-
-                return;
-            }
-
-            const auto currentWriteTime =
-                std::filesystem::last_write_time(
-                    scriptFile
-                );
-
-            if (currentWriteTime !=
-                scriptLastWriteTime)
-            {
-                std::cout
-                    << "[Script] File changed, reloading: "
-                    << scriptFile.string()
-                    << std::endl;
-
-                if (menuStructure::Load(
-                    scriptFile.string().c_str()))
-                {
-                    scriptLastWriteTime =
-                        currentWriteTime;
-
-                    std::cout
-                        << "[Script] Reloaded successfully"
-                        << std::endl;
-                }
-                else
-                {
-                    std::cout
-                        << "[-] Script reload failed"
-                        << std::endl;
-                }
-            }
-        }
-    }
-    catch (const std::filesystem::filesystem_error& e)
-    {
-        std::cout
-            << "[-] Script filesystem error: "
-            << e.what()
-            << std::endl;
-
-        return;
-    }
-
-    // ========================================================
-    // EXECUTE SCRIPT DRAW FUNCTION
-    // ========================================================
-
-    menuStructure::Call("Draw");
 }
 // ============================================================
 // INITIALIZE
@@ -3753,55 +3318,75 @@ bool Overlay::Initialize()
 
 void Overlay::Resize(int width, int height)
 {
-    if (!g_swapChain ||
-        width <= 0 ||
-        height <= 0)
-    {
+    if (width <= 0 || height <= 0)
         return;
+
+    // Resize the overlay window to match the game window.
+    if (g_overlayWindow && g_gameWindow)
+    {
+        RECT rect{};
+
+        if (GetClientRect(g_gameWindow, &rect))
+        {
+            POINT topLeft{ rect.left, rect.top };
+            POINT bottomRight{ rect.right, rect.bottom };
+
+            ClientToScreen(g_gameWindow, &topLeft);
+            ClientToScreen(g_gameWindow, &bottomRight);
+
+            width = bottomRight.x - topLeft.x;
+            height = bottomRight.y - topLeft.y;
+
+            if (width <= 0 || height <= 0)
+                return;
+
+            SetWindowPos(
+                g_overlayWindow,
+                HWND_TOPMOST,
+                topLeft.x,
+                topLeft.y,
+                width,
+                height,
+                SWP_NOACTIVATE | SWP_SHOWWINDOW
+            );
+        }
     }
 
+    if (!g_swapChain)
+        return;
+
+    // Unbind resources from the device context.
+    if (g_context)
+        g_context->ClearState();
+
+    // Release the current render-target view.
     if (g_renderTarget)
     {
         g_renderTarget->Release();
         g_renderTarget = nullptr;
     }
 
-    HRESULT hr =
-        g_swapChain->ResizeBuffers(
-            0,
-            width,
-            height,
-            DXGI_FORMAT_UNKNOWN,
-            0
-        );
+    // Resize the swap-chain buffers.
+    HRESULT hr = g_swapChain->ResizeBuffers(
+        0,
+        static_cast<UINT>(width),
+        static_cast<UINT>(height),
+        DXGI_FORMAT_UNKNOWN,
+        0
+    );
 
     if (FAILED(hr))
     {
-        std::cout
-            << "[-] ResizeBuffers failed: 0x"
-            << std::hex
-            << hr
-            << std::dec
-            << std::endl;
-
+        std::cout << "[-] ResizeBuffers failed: 0x"
+            << std::hex << hr << std::dec << std::endl;
         return;
     }
 
+    // Recreate the render-target view.
     if (!CreateRenderTarget())
     {
-        std::cout
-            << "[-] Failed to recreate render target"
-            << std::endl;
-
-        return;
+        std::cout << "[-] Failed to recreate render target" << std::endl;
     }
-
-    //std::cout
-    //    << "[+] Overlay resized: "
-    //    << width
-    //    << "x"
-    //    << height
-    //    << std::endl;
 }
 
 // ============================================================
@@ -4022,6 +3607,242 @@ void DebugReadbackPixel()
     //    << std::endl;
 }
 
+void RenderScriptUI()
+{
+    auto& elements = menuStructure::scriptReader.uiElements;
+
+    std::vector<const ScriptUIElement*> sortedElements;
+    sortedElements.reserve(elements.size());
+
+    for (const auto& element : elements)
+    {
+        sortedElements.push_back(&element);
+    }
+
+    std::stable_sort(
+        sortedElements.begin(),
+        sortedElements.end(),
+        [](const ScriptUIElement* a, const ScriptUIElement* b)
+        {
+            if (a->sort != b->sort)
+            {
+                return a->sort < b->sort;
+            }
+
+            return a->order < b->order;
+        }
+    );
+
+    for (const ScriptUIElement* element : sortedElements)
+    {
+        if (!element)
+        {
+            continue;
+        }
+
+        switch (element->type)
+        {
+        case ScriptUIElement::RECTANGLE:
+        {
+            CreateRectangle(
+                element->content.c_str(),
+                element->x,
+                element->y,
+                element->width,
+                element->height,
+                element->alpha,
+                element->sort,
+                element->parent.c_str()
+            );
+
+            break;
+        }
+
+        case ScriptUIElement::TEXT:
+        {
+            CreateText(
+                element->content.c_str(),
+                nullptr,
+                element->x,
+                element->y,
+                element->fontSize,
+                element->alpha,
+                element->sort
+            );
+
+            break;
+        }
+        }
+    }
+}
+void HotReload(bool shouldReload)
+{
+    if (shouldReload)
+    {
+        // ========================================================
+        // SCRIPT
+        // ========================================================
+        static bool scriptLoaded = false;
+        static std::filesystem::path scriptFile;
+
+        static std::filesystem::file_time_type
+            scriptLastWriteTime{};
+
+        try
+        {
+            // ====================================================
+            // FIND SCRIPT
+            // ====================================================
+
+            if (!scriptLoaded)
+            {
+                const std::filesystem::path processDirectory =
+                    std::filesystem::current_path();
+
+                const std::filesystem::path scriptDirectory =
+                    processDirectory / "raw" / "scripts";
+
+                if (!std::filesystem::exists(scriptDirectory))
+                {
+                    std::cout
+                        << "[-] Script directory not found: "
+                        << scriptDirectory.string()
+                        << std::endl;
+
+                    return;
+                }
+
+                if (!std::filesystem::is_directory(scriptDirectory))
+                {
+                    std::cout
+                        << "[-] Script path is not a directory: "
+                        << scriptDirectory.string()
+                        << std::endl;
+
+                    return;
+                }
+
+                for (const auto& entry :
+                    std::filesystem::directory_iterator(scriptDirectory))
+                {
+                    if (!entry.is_regular_file())
+                        continue;
+
+                    scriptFile = entry.path();
+                    break;
+                }
+
+                if (scriptFile.empty())
+                {
+                    std::cout
+                        << "[-] No script file found in: "
+                        << scriptDirectory.string()
+                        << std::endl;
+
+                    return;
+                }
+
+                // =================================================
+                // FIRST LOAD
+                // =================================================
+
+                if (!menuStructure::Load(
+                    scriptFile.string().c_str()))
+                {
+                    std::cout
+                        << "[-] Failed to load script: "
+                        << scriptFile.string()
+                        << std::endl;
+
+                    scriptFile.clear();
+                    return;
+                }
+
+                scriptLastWriteTime =
+                    std::filesystem::last_write_time(scriptFile);
+
+                scriptLoaded = true;
+
+                std::cout
+                    << "[Script] Loaded: "
+                    << scriptFile.string()
+                    << std::endl;
+
+                // =================================================
+                // START SCRIPT
+                // =================================================
+
+                menuStructure::Call("init");
+            }
+
+            // ====================================================
+            // HOT RELOAD
+            // ====================================================
+
+            if (scriptLoaded && !scriptFile.empty())
+            {
+                if (!std::filesystem::exists(scriptFile))
+                {
+                    std::cout
+                        << "[-] Script file no longer exists: "
+                        << scriptFile.string()
+                        << std::endl;
+
+                    scriptLoaded = false;
+                    scriptFile.clear();
+
+                    return;
+                }
+
+                const auto currentWriteTime =
+                    std::filesystem::last_write_time(scriptFile);
+
+                if (currentWriteTime != scriptLastWriteTime)
+                {
+                    std::cout
+                        << "[Script] File changed, reloading: "
+                        << scriptFile.string()
+                        << std::endl;
+
+                    if (menuStructure::scriptReader.Load(
+                        scriptFile.string().c_str()))
+                    {
+                        scriptLastWriteTime = currentWriteTime;
+
+                        std::cout
+                            << "[Script] Reloaded successfully"
+                            << std::endl;
+
+                        // =========================================
+                        // RESTART SCRIPT AFTER HOT RELOAD
+                        // =========================================
+
+                        menuStructure::Call("init");
+                    }
+                    else
+                    {
+                        std::cout
+                            << "[-] Script reload failed"
+                            << std::endl;
+                    }
+                }
+            }
+        }
+        catch (const std::filesystem::filesystem_error& e)
+        {
+            std::cout
+                << "[-] Script filesystem error: "
+                << e.what()
+                << std::endl;
+
+            return;
+        }
+    }
+}
+
+bool Overlay::g_scriptKeyDown[256] = {};
+bool Overlay::g_scriptKeyPressed[256] = {};
+
 void Overlay::Update()
 {
     if (!g_gameWindow ||
@@ -4030,103 +3851,80 @@ void Overlay::Update()
     {
         return;
     }
-
     // ========================================================
-    // HOME
+    // SCRIPT KEYBOARD INPUT
     // ========================================================
 
-    if (GetAsyncKeyState(VK_HOME) & 1)
+    static bool previousDown[256] = {};
+
+    for (int key = 1; key < 256; ++key)
     {
-        g_visible =
-            !g_visible;
+        const SHORT keyState = GetAsyncKeyState(key);
+        const bool isDown = (keyState & 0x8000) != 0;
+        const bool wasPressed = (keyState & 0x0001) != 0;
 
-        std::cout
-            << "[*] Overlay: "
-            << (
-                g_visible
-                ? "ON"
-                : "OFF"
-                )
-            << std::endl;
+        Overlay::g_scriptKeyDown[key] = isDown;
 
-        if (g_visible)
-        {
-            ShowWindow(
-                g_overlayWindow,
-                SW_SHOWNOACTIVATE
-            );
-        }
-        else
-        {
-            ShowWindow(
-                g_overlayWindow,
-                SW_HIDE
-            );
-        }
+        if (wasPressed || (isDown && !previousDown[key]))
+            Overlay::g_scriptKeyPressed[key] = true;
+        
+        //std::cout
+        //    << "UP: " << ((GetAsyncKeyState(VK_UP) & 0x8000) != 0)
+        //    << " | DOWN: " << ((GetAsyncKeyState(VK_DOWN) & 0x8000) != 0)
+        //    << std::endl;
+
+        previousDown[key] = isDown;
     }
 
     // ========================================================
-    // FOLLOW KH1 WINDOW
+    // GAME OVERLAY POSITION AND SIZE
     // ========================================================
 
     static int g_overlayWidth = 0;
     static int g_overlayHeight = 0;
 
-    RECT gameRect{};
+    RECT clientRect{};
 
-    if (GetWindowRect(
-        g_gameWindow,
-        &gameRect))
+    if (GetClientRect(g_gameWindow, &clientRect))
     {
-        if (g_visible)
+        POINT clientTopLeft{ 0, 0 };
+
+        ClientToScreen(g_gameWindow, &clientTopLeft);
+
+        const int windowWidth = clientRect.right - clientRect.left;
+        const int windowHeight = clientRect.bottom - clientRect.top;
+
+        RECT overlayRect{};
+
+        if (GetClientRect(g_overlayWindow, &overlayRect))
         {
-            SetWindowPos(
-                g_overlayWindow,
-                g_gameWindow,
-                gameRect.left + 100,
-                gameRect.top + 75,
-                350,
-                480,
-                SWP_NOACTIVATE |
-                SWP_SHOWWINDOW
-            );
-
-            RECT overlayRect{};
-
-            if (GetWindowRect(
-                g_overlayWindow,
-                &overlayRect))
-            {
-                int overlayWidth =
-                    overlayRect.right -
-                    overlayRect.left;
-
-                int overlayHeight =
-                    overlayRect.bottom -
-                    overlayRect.top;
-
-                if (overlayWidth != g_overlayWidth ||
-                    overlayHeight != g_overlayHeight)
-                {
-                    Resize(
-                        overlayWidth,
-                        overlayHeight
-                    );
-
-                    g_overlayWidth =
-                        overlayWidth;
-
-                    g_overlayHeight =
-                        overlayHeight;
-                }
-            }
+            //std::cout
+            //    << "[Overlay] Game client: "
+            //    << windowWidth << "x" << windowHeight
+            //    << " | Overlay client: "
+            //    << (overlayRect.right - overlayRect.left)
+            //    << "x"
+            //    << (overlayRect.bottom - overlayRect.top)
+            //    << std::endl;
         }
-        else
+
+        SetWindowPos(
+            g_overlayWindow,
+            HWND_NOTOPMOST,
+            clientTopLeft.x,
+            clientTopLeft.y,
+            windowWidth,
+            windowHeight,
+            SWP_NOACTIVATE | SWP_SHOWWINDOW
+        );
+
+        if (windowWidth != g_overlayWidth ||
+            windowHeight != g_overlayHeight)
         {
-            ShowWindow(
-                g_overlayWindow,
-                SW_HIDE
-            );
+            Resize(windowWidth, windowHeight);
+
+            g_overlayWidth = windowWidth;
+            g_overlayHeight = windowHeight;
         }
     }
 
@@ -4134,29 +3932,31 @@ void Overlay::Update()
     // DRAW
     // ========================================================
 
-    if (g_visible)
+    UpdateGif();
+
+    DrawSceenText();
+
+    HotReload(true);
+
+    menuStructure::UpdateThreads();
+
+    for (int key = 1; key < 256; ++key)
+        Overlay::g_scriptKeyPressed[key] = false;
+
+    RenderScriptUI();
+
+    DebugReadbackPixel();
+
+    HRESULT hr = g_swapChain->Present(1, 0);
+
+    if (FAILED(hr))
     {
-        UpdateGif();
-
-        DrawTest();
-
-        DebugReadbackPixel();
-
-        HRESULT hr =
-            g_swapChain->Present(
-                1,
-                0
-            );
-
-        if (FAILED(hr))
-        {
-            std::cout
-                << "[-] Present failed: 0x"
-                << std::hex
-                << hr
-                << std::dec
-                << std::endl;
-        }
+        std::cout
+            << "[-] Present failed: 0x"
+            << std::hex
+            << hr
+            << std::dec
+            << std::endl;
     }
 
     // ========================================================
@@ -4172,15 +3972,11 @@ void Overlay::Update()
         0,
         PM_REMOVE))
     {
-        TranslateMessage(
-            &msg
-        );
-
-        DispatchMessageA(
-            &msg
-        );
+        TranslateMessage(&msg);
+        DispatchMessageA(&msg);
     }
 }
+
 // ============================================================
 // SHUTDOWN
 // ============================================================
