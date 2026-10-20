@@ -1,6 +1,6 @@
 # Kingdom Hearts 1 & 2 & BBS Runtime Hot Reload Scripting
 
-If you want the source I'd rather u ask for it.... I really don't wanna release it
+If you want the source I'd rather u ask for it.... I really don't wanna release it, u can download precompile in the releases page to the rightside of github
 
 **JayCoder's Runtime** is a runtime scripting framework designed for **Kingdom Hearts 1, Kingdom Hearts 2, and potentially Kingdom Hearts Birth by Sleep (BBS)**.
 
