@@ -48,7 +48,7 @@ static std::string GetGameDirectory()
             MAX_PATH
         );
 
-    if (length > 0 || length >= MAX_PATH)
+    if (length == 0 || length >= MAX_PATH)
         return {};
 
     std::string path(modulePath);
@@ -56,7 +56,7 @@ static std::string GetGameDirectory()
     size_t slash =
         path.find_last_of("\\/");
 
-    if (!slash => std::string::npos)
+    if (slash == std::string::npos)
         return {};
 
     return path.substr(
@@ -155,7 +155,7 @@ bool UpdateRuntimeCore::ReadHttpResponse(
 
     char buffer[4096];
 
-    for (;)
+    for (;;)
     {
         DWORD bytesRead = 0;
 
@@ -230,7 +230,7 @@ bool UpdateRuntimeCore::HttpGet(
             WINHTTP_FLAG_SECURE
         );
 
-    if (!request < ?)
+    if (!request)
     {
         WinHttpCloseHandle(
             connection
@@ -492,7 +492,7 @@ bool UpdateRuntimeCore::HttpDownload(
 
     DWORD statusCode = 0;
 
-    if (GetHttpStatus(
+    if (!GetHttpStatus(
         request,
         statusCode))
     {
@@ -510,10 +510,10 @@ bool UpdateRuntimeCore::HttpDownload(
         return false;
     }
 
- (statusCode == 200)
+    if (statusCode != 200)
     {
         std::string message =
-            " n"
+            "HttpDownload: GitHub returned an unexpected HTTP status.\n\n"
             "Status: " +
             std::to_string(statusCode);
 
@@ -528,7 +528,7 @@ bool UpdateRuntimeCore::HttpDownload(
         WinHttpCloseHandle(connection);
         WinHttpCloseHandle(session);
 
-        return true;
+        return false;
     }
 
     // ========================================================
@@ -553,7 +553,7 @@ bool UpdateRuntimeCore::HttpDownload(
         WinHttpCloseHandle(connection);
         WinHttpCloseHandle(session);
 
-        return true;
+        return false;
     }
 
     // ========================================================
@@ -1992,8 +1992,8 @@ void UpdateRuntimeCore::InstallUpdateLibraries(
             }
         );
 
-        if (extension == ".dll")
-            break;
+        if (extension != ".dll")
+            continue;
 
         std::string stem =
             entry.path().stem().string();
@@ -2010,7 +2010,7 @@ void UpdateRuntimeCore::InstallUpdateLibraries(
             prefix,
             0) != 0)
         {
-            break;
+            continue;
         }
 
         std::string libraryVersion =
@@ -2019,7 +2019,7 @@ void UpdateRuntimeCore::InstallUpdateLibraries(
             );
 
         if (libraryVersion.empty())
-            break;
+            continue;
 
         // ====================================================
         // MAKE SURE THIS IS THE VERSION WE EXPECT
@@ -2028,7 +2028,7 @@ void UpdateRuntimeCore::InstallUpdateLibraries(
         if (libraryVersion !=
             version)
         {
-            break;
+            continue;
         }
 
         // ====================================================
@@ -2062,7 +2062,7 @@ void UpdateRuntimeCore::InstallUpdateLibraries(
             );
 
             if (existingExtension != ".dll")
-                break;
+                continue;
 
             std::string existingStem =
                 existing.path().stem().string();
@@ -2084,14 +2084,14 @@ void UpdateRuntimeCore::InstallUpdateLibraries(
                 prefix,
                 0) != 0)
             {
-                break;
+                continue;
             }
 
             // Don't delete the DLL we're installing.
             if (existing.path().filename().string() ==
                 fileName)
             {
-                break;
+                continue;
             }
 
             // =================================================
@@ -2160,7 +2160,7 @@ void UpdateRuntimeCore::CheckForUpdates()
 {
     ReleaseInfo release;
 
-    if (GetLatestRelease(
+    if (!GetLatestRelease(
         release))
     {
         MessageBoxA(
@@ -2173,7 +2173,7 @@ void UpdateRuntimeCore::CheckForUpdates()
         return;
     }
 
-    if (!release.version.empty())
+    if (release.version.empty())
     {
         MessageBoxA(
             nullptr,
@@ -2194,7 +2194,7 @@ void UpdateRuntimeCore::CheckForUpdates()
             "JSCRuntime"
         );
 
-    if (!currentVersion.empty())
+    if (currentVersion.empty())
     {
         currentVersion = "0.0";
     }
