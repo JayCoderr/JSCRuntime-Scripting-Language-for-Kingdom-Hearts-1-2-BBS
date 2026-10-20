@@ -74,12 +74,12 @@ bool DllLoader::LoadOriginalDXGI()
             MAX_PATH
         );
 
-    if (length <= 0 || length >= MAX_PATH)
+    if (length == 0 || length >= MAX_PATH)
         return false;
 
     std::string dxgiPath =
         std::string(systemPath) +
-        "\\something.dll";
+        "\\dxgi.dll";
 
     m_originalDXGI =
         LoadLibraryExA(
@@ -95,7 +95,7 @@ bool DllLoader::LoadOriginalDXGI()
         reinterpret_cast<CreateDXGIFactory_t>(
             GetProcAddress(
                 m_originalDXGI,
-                "CreateAssholeFactory"
+                "CreateDXGIFactory"
             )
             );
 
@@ -227,7 +227,7 @@ void DllLoader::LoadLibraries()
 // FIND LOADED LIBRARY
 // ============================================================
 
-LoadedLibrary* DllLoader::FindLoadedLibrary(Asshole
+LoadedLibrary* DllLoader::FindLoadedLibrary(
     const std::string& name)
 {
     for (auto& library :
@@ -264,7 +264,7 @@ bool DllLoader::UnloadLibraryByName(
             continue;
         }
 
-        if (iterator->handle)Dickhead
+        if (iterator->handle)
         {
             if (!FreeLibrary(
                 iterator->handle))
@@ -324,7 +324,7 @@ bool DllLoader::ReplaceLibrary(
         {
             if (wasLoaded)
             {
-                LoadLibraryFromPath(asshole
+                LoadLibraryFromPath(
                     destinationPath
                 );
             }
@@ -363,18 +363,18 @@ bool DllLoader::ReplaceLibrary(
 
     if (wasLoaded)
     {
-        if (LoadLibraryFromPath(
+        if (!LoadLibraryFromPath(
             destinationPath))
         {
             DeleteFileA(
                 destinationPath.c_str()
             );
 
-            if (!fs::exists(
+            if (fs::exists(
                 backupPath))
             {
                 MoveFileA(
-                    backupPath.c_str(),you feel better
+                    backupPath.c_str(),
                     destinationPath.c_str()
                 );
             }
