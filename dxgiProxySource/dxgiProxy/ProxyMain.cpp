@@ -78,6 +78,78 @@ void ProxyMain::Run(
     }
 }
 
+// ============================================================
+// DXGI EXPORTS
+// ============================================================
+
+HRESULT ProxyMain::CreateDXGIFactory(
+    REFIID riid,
+    void** ppFactory)
+{
+    auto function =
+        DllLoader::Instance()
+        .GetCreateDXGIFactory();
+
+    if (!function)
+        return E_FAIL;
+
+    return function(
+        riid,
+        ppFactory
+    );
+}
+
+
+HRESULT ProxyMain::CreateDXGIFactory1(
+    REFIID riid,
+    void** ppFactory)
+{
+    auto function =
+        DllLoader::Instance()
+        .GetCreateDXGIFactory1();
+
+    if (!function)
+        return E_FAIL;
+
+    return function(
+        riid,
+        ppFactory
+    );
+}
+
+
+HRESULT ProxyMain::CreateDXGIFactory2(
+    UINT Flags,
+    REFIID riid,
+    void** ppFactory)
+{
+    auto function =
+        DllLoader::Instance()
+        .GetCreateDXGIFactory2();
+
+    if (!function)
+        return E_FAIL;
+
+    return function(
+        Flags,
+        riid,
+        ppFactory
+    );
+}
+
+
+HRESULT ProxyMain::DXGIDeclareAdapterRemovalSupport()
+{
+    auto function =
+        DllLoader::Instance()
+        .GetDXGIDeclareAdapterRemovalSupport();
+
+    if (!function)
+        return E_FAIL;
+
+    return function();
+}
+
 
 // ============================================================
 // DLL MAIN
@@ -100,4 +172,61 @@ BOOL APIENTRY DllMain(
     }
 
     return TRUE;
+}
+
+
+// ============================================================
+// DXGI EXPORTS
+// ============================================================
+
+extern "C"
+__declspec(dllexport)
+HRESULT WINAPI CreateDXGIFactory(
+    REFIID riid,
+    void** ppFactory)
+{
+    return ProxyMain::Instance()
+        .CreateDXGIFactory(
+            riid,
+            ppFactory
+        );
+}
+
+
+extern "C"
+__declspec(dllexport)
+HRESULT WINAPI CreateDXGIFactory1(
+    REFIID riid,
+    void** ppFactory)
+{
+    return ProxyMain::Instance()
+        .CreateDXGIFactory1(
+            riid,
+            ppFactory
+        );
+}
+
+
+extern "C"
+__declspec(dllexport)
+HRESULT WINAPI CreateDXGIFactory2(
+    UINT Flags,
+    REFIID riid,
+    void** ppFactory)
+{
+    return ProxyMain::Instance()
+        .CreateDXGIFactory2(
+            Flags,
+            riid,
+            ppFactory
+        );
+}
+
+
+extern "C"
+__declspec(dllexport)
+HRESULT WINAPI DXGIDeclareAdapterRemovalSupport()
+{
+    return ProxyMain::Instance()
+        .DXGIDeclareAdapterRemovalSupport();
 }
