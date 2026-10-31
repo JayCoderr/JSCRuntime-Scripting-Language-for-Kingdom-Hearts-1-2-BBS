@@ -1,0 +1,444 @@
+init()
+{
+    sora.KingdomHeartVars = [];
+    sora initKingdomHearts();
+}
+
+initKingdomHearts()
+{
+	sora SoraConnect();
+}
+
+SoraConnect()
+{
+	sora SoraPlayerSpawn();
+}
+
+SoraPlayerSpawn();
+{
+    sora.hasAlreadySpawn = true;
+	
+	if(sora.hasAlreadySpawn)
+	{
+		sora MenuStructure();
+		sora thread MenuControls();
+	}	
+}
+
+MenuStructure()
+{
+    sora MenuTitle("JSC Test Menu", "");
+    sora MenuOption("JSC Test Menu", 0, "Array Tests", &SubMenu, "Arrays", "");
+    sora MenuOption("JSC Test Menu", 1, "Thread Tests", &SubMenu, "Threads", "");//Flymode()
+    sora MenuOption("JSC Test Menu", 2, "UI / HUD Tests", &SubMenu, "UI", "");
+    sora MenuOption("JSC Test Menu", 3, "Flymode", &PeterpanFlymode, "", "");	//what issues do we have? maybe a size fail check, previous menu still fails as well, then it pretty much basically done with script compiler for a while.... only to add game functions...
+    sora MenuOption("JSC Test Menu", 4, "Close Menu", &ToggleMenu, "", "");
+
+    sora MenuTitle("Arrays", "JSC Test Menu");
+    sora MenuOption("Arrays", 0, "Run Array Test", &ArrayTest, "", "");
+    sora MenuOption("Arrays", 1, "Back", &MenuPrevious, "", "");
+
+    sora MenuTitle("Threads", "JSC Test Menu");
+    sora MenuOption("Threads", 0, "Run Wait Test", &WaitTest, "", "");
+    sora MenuOption("Threads", 1, "Back", &MenuPrevious, "", "");
+
+    sora MenuTitle("UI", "JSC Test Menu");
+    sora MenuOption("UI", 0, "Show HUD Message", &ShowHUDMessage, "", "");
+    sora MenuOption("UI", 1, "Back", &MenuPrevious, "", "");
+}
+
+SubMenu(input)
+{
+    sora MenuLoad(input);
+}
+
+MenuPrevious()
+{
+	
+    sora.Menu = sora.KingdomHeartVars["MenuHuds"]["MenuKey"];
+
+sora iprintln($"MenuKey: {sora.KingdomHeartVars["MenuHuds"]["MenuKey"]}");
+sora iprintln($"Menu variable: {sora.Menu}");
+
+    if (sora.Menu == "")
+    {
+        sora.Menu = sora.KingdomHeartVars["MenuBase"]["Root"];
+    }
+
+    if (sora.Menu == "")
+    {
+        return;
+    }
+
+    sora.Parent = sora.KingdomHeartVars["MenuBase"]["MenuPrevious"][sora.Menu];
+
+    if (sora.Parent == "")
+    {
+        sora ToggleMenu();
+        return;
+    }
+
+    sora.KingdomHeartVars["MenuHuds"]["MenuKey"] = sora.Parent;
+    sora.KingdomHeartVars["MenuBase"]["Root"] = sora.Parent;
+
+    sora SubMenu(sora.Parent);
+
+    sora RefreshMenuRows();
+    sora MoveScroller();
+}
+
+MenuLoad(Menu)
+{
+    sora.KingdomHeartVars["MenuBase"]["Root"] = Menu;
+    sora.KingdomHeartVars["MenuHuds"]["MenuKey"] = Menu;
+    sora.KingdomHeartVars["MenuHuds"]["MenuText"] = sora.KingdomHeartVars["MenuBase"]["MenuText"][Menu];
+    sora.KingdomHeartVars["MenuHuds"]["MenuFunction"] = sora.KingdomHeartVars["MenuBase"]["MenuFunction"][Menu];
+    sora.KingdomHeartVars["MenuHuds"]["MenuInput"] = sora.KingdomHeartVars["MenuBase"]["MenuInput"][Menu];
+    sora.KingdomHeartVars["MenuHuds"]["MenuInput2"] = sora.KingdomHeartVars["MenuBase"]["MenuInput2"][Menu];
+    sora.KingdomHeartVars["MenuHuds"]["TotalItems"] = sora.KingdomHeartVars["MenuHuds"]["MenuText"].size();
+    sora.KingdomHeartVars["MenuBase"]["o_index"][Menu] = 0;
+    sora.KingdomHeartVars["MenuBase"]["s_index"][Menu] = 0;
+    sora.KingdomHeartVars["MenuBase"]["l_index"][Menu] = sora.KingdomHeartVars["MenuHuds"]["TotalItems"] > 0 ? sora.KingdomHeartVars["MenuHuds"]["TotalItems"] - 1 : 0;
+    sora.KingdomHeartVars["MenuHuds"]["ScrollerY"] = 80;
+    sora.KingdomHeartVars["MenuHuds"]["Title"] = Menu;
+	sora.KingdomHeartVars["MenuHuds"]["PreviousMenu"] = "";
+	sora.KingdomHeartVars["MenuHuds"]["PreviousStartIndex"] = -1;
+}
+
+MenuTitle(Menu, Parent)
+{
+	////sora iprintln($"test x ran 4");
+    sora.KingdomHeartVars["MenuBase"]["MenuPrevious"][Menu] = Parent;
+    sora.KingdomHeartVars["MenuBase"]["o_index"][Menu]= 0;
+    sora.KingdomHeartVars["MenuBase"]["s_index"][Menu]= 0;
+    sora.KingdomHeartVars["MenuBase"]["l_index"][Menu]= 0;
+
+    sora.KingdomHeartVars["MenuBase"]["MenuText"][Menu] = [];
+    sora.KingdomHeartVars["MenuBase"]["MenuFunction"][Menu] = [];
+    sora.KingdomHeartVars["MenuBase"]["MenuInput"][Menu] = [];
+    sora.KingdomHeartVars["MenuBase"]["MenuInput2"][Menu] = [];
+	sora iprintln($"^5Menu: ^7{Menu}, ^3Parent: ^7{sora.KingdomHeartVars["MenuBase"]["MenuPrevious"][Menu]}");////
+}
+
+MenuOption(Menu, Index, Text, Func, Input, Input2)
+{
+    sora.KingdomHeartVars["MenuBase"]["MenuText"][Menu][Index] = Text;
+    sora.KingdomHeartVars["MenuBase"]["MenuFunction"][Menu][Index] = Func;
+    sora.KingdomHeartVars["MenuBase"]["MenuInput"][Menu][Index] = Input;
+    sora.KingdomHeartVars["MenuBase"]["MenuInput2"][Menu][Index] = Input2;
+
+    sora iprintln($"^2[MenuOption] ^7Menu: {Menu} | Index: {Index}");
+    sora iprintln($"^2[MenuOption] ^7Stored text: {sora.KingdomHeartVars["MenuBase"]["MenuText"][Menu][Index]}");
+    sora iprintln($"^2[MenuOption] ^7Menu size: {sora.KingdomHeartVars["MenuBase"]["MenuText"][Menu].size()}");
+
+    if (Index < sora.KingdomHeartVars["MenuBase"]["VisibleItems"] - 1)
+    {
+        sora.KingdomHeartVars["MenuBase"]["l_index"][Menu] = Index;
+    }
+    else
+    {
+        sora.KingdomHeartVars["MenuBase"]["l_index"][Menu] = sora.KingdomHeartVars["MenuBase"]["VisibleItems"] - 1;
+    }
+}
+
+MenuControls()
+{
+    if ((sora ButtonPressed("L2") && sora ButtonPressed("R3")) && !sora.KingdomHeartVars["MenuHuds"]["MenuOpen"])
+    {
+        sora ToggleMenu();
+    }
+    else if (sora.KingdomHeartVars["MenuHuds"]["MenuOpen"])
+    {
+        if (sora ButtonPressed("BACKSPACE") || sora ButtonPressed("CIRCLE") || sora ButtonPressed("R3"))
+        {
+            sora MenuPrevious();
+        }
+		else if (sora ButtonPressed("UP") || sora ButtonPressed("DPAD_UP"))
+		{
+			sora MenuMove(-1);
+			sora MoveScroller();
+		}
+		else if (sora ButtonPressed("DOWN") || sora ButtonPressed("DPAD_DOWN"))
+		{
+			sora MenuMove(1);
+			sora MoveScroller();
+		}
+        else if (sora ButtonPressed("ENTER") || sora ButtonPressed("SQUARE"))
+        {
+            sora MenuSelect();
+        }
+    }
+}
+
+
+MenuMove(direction)
+{
+    sora.Menu = sora.KingdomHeartVars["MenuHuds"]["MenuKey"];
+    if (sora.Menu == "")
+    {
+        sora.Menu = sora.KingdomHeartVars["MenuBase"]["Root"];
+    }
+    sora.total = sora.KingdomHeartVars["MenuHuds"]["TotalItems"];
+    sora.visible = sora.KingdomHeartVars["MenuBase"]["VisibleItems"];
+    if (sora.total <= 0 || sora.visible <= 0)
+    {
+        return;
+    }
+    sora.KingdomHeartVars["MenuBase"]["o_index"][sora.Menu] += direction;
+    if (sora.KingdomHeartVars["MenuBase"]["o_index"][sora.Menu] < 0)
+    {
+        sora.KingdomHeartVars["MenuBase"]["o_index"][sora.Menu] = sora.total - 1;
+    }
+    else if (sora.KingdomHeartVars["MenuBase"]["o_index"][sora.Menu] >= sora.total
+    )
+    {
+        sora.KingdomHeartVars["MenuBase"]["o_index"][sora.Menu] = 0;
+    }
+    sora.selected = sora.KingdomHeartVars["MenuBase"]["o_index"][sora.Menu];
+    sora.scroll = sora.KingdomHeartVars["MenuBase"]["s_index"][sora.Menu];
+
+    if (sora.selected < sora.scroll)
+    {
+        sora.scroll = sora.selected;
+    }
+    else if (sora.selected >= sora.scroll + sora.visible)
+    {
+        sora.scroll = sora.selected - sora.visible + 1;
+    }
+    sora.KingdomHeartVars["MenuBase"]["s_index"][sora.Menu] = sora.scroll;
+    sora.KingdomHeartVars["MenuBase"]["l_index"][sora.Menu] = sora.scroll + sora.visible - 1;
+	
+    if (sora.KingdomHeartVars["MenuBase"]["l_index"][sora.Menu] >= sora.total)
+    {
+        sora.KingdomHeartVars["MenuBase"]["l_index"][sora.Menu] =
+        sora.total - 1;
+    }
+
+    sora RefreshMenuRows();
+}
+
+
+MoveScroller()
+{
+    sora.Menu = sora.KingdomHeartVars["MenuHuds"]["MenuKey"];
+    if (sora.Menu == "")
+    {
+        sora.Menu = sora.KingdomHeartVars["MenuBase"]["Root"];
+    }
+    sora.selected = sora.KingdomHeartVars["MenuBase"]["o_index"][sora.Menu];
+	sora.scroll = sora.KingdomHeartVars["MenuBase"]["s_index"][sora.Menu];
+    sora.modMenuscrollerY = 80 + (sora.selected - sora.scroll) * 30;
+	sora.KingdomHeartVars["MenuHuds"]["Scroller"].y = sora.modMenuscrollerY;
+}
+
+
+RefreshMenuRows()
+{
+    sora.Menu = sora.KingdomHeartVars["MenuHuds"]["MenuKey"];
+
+    if (sora.Menu == "")
+    {
+        sora.Menu = sora.KingdomHeartVars["MenuBase"]["Root"];
+    }
+
+    sora.total = sora.KingdomHeartVars["MenuBase"]["MenuText"][sora.Menu].size();
+    sora.visible = sora.KingdomHeartVars["MenuBase"]["VisibleItems"];
+    sora.start = sora.KingdomHeartVars["MenuBase"]["s_index"][sora.Menu];
+
+    sora.KingdomHeartVars["MenuHuds"]["TotalItems"] = sora.total;
+
+    if (sora.total <= 0 || sora.visible <= 0)
+    {
+        return;
+    }
+
+    if (
+        sora.Menu == sora.KingdomHeartVars["MenuHuds"]["PreviousMenu"]
+        && sora.start == sora.KingdomHeartVars["MenuHuds"]["PreviousStartIndex"]
+    )
+    {
+        return;
+    }
+
+    for (sora.row = 0; sora.row < sora.visible; sora.row++)
+    {
+        sora.item = sora.start + sora.row;
+
+        for (sora.j = 0; sora.item >= sora.total; sora.j++)
+        {
+            sora.item -= sora.total;
+        }
+
+        sora.rowText =
+            sora.KingdomHeartVars["MenuBase"]["MenuText"][sora.Menu][sora.item];
+
+        sora.KingdomHeartVars["MenuHuds"]["RowText"][sora.row] = sora.rowText;
+
+        sora.KingdomHeartVars["MenuBase"]["Text"][sora.row].content = sora.rowText;
+    }
+
+    sora.KingdomHeartVars["MenuHuds"]["PreviousMenu"] = sora.Menu;
+    sora.KingdomHeartVars["MenuHuds"]["PreviousStartIndex"] = sora.start;
+}
+
+
+MenuSelect()
+{
+    sora.Menu = sora.KingdomHeartVars["MenuHuds"]["MenuKey"];
+
+    if (sora.Menu == "")
+    {
+        sora.Menu = sora.KingdomHeartVars["MenuBase"]["Root"];
+    }
+
+    sora.index =
+        sora.KingdomHeartVars["MenuBase"]["o_index"][sora.Menu];
+
+    sora.total =
+        sora.KingdomHeartVars["MenuBase"]["MenuFunction"][sora.Menu].size();
+
+    if (sora.index < 0 || sora.index >= sora.total)
+    {
+        sora iprintln("^1MenuSelect: index out of range");
+        return;
+    }
+
+    sora.KingdomHeartVars["MenuHuds"]["SelectedAction"] =
+        sora.KingdomHeartVars["MenuBase"]["MenuFunction"][sora.Menu][sora.index];
+
+    sora.KingdomHeartVars["MenuHuds"]["SelectedInput"] =
+        sora.KingdomHeartVars["MenuBase"]["MenuInput"][sora.Menu][sora.index];
+
+    sora.KingdomHeartVars["MenuHuds"]["SelectedInput2"] =
+        sora.KingdomHeartVars["MenuBase"]["MenuInput2"][sora.Menu][sora.index];
+
+    sora ExecuteSelectedAction();
+}
+
+ExecuteSelectedAction()
+{
+    //sora iprintln("ExecuteSelectedAction() ^2passed");
+    sora.KingdomHeartVars["MenuHuds"]["SelectedAction"]();
+    //sora iprintln($"hummm: {sora.KingdomHeartVars["MenuHuds"]["SelectedAction"]}");
+}
+
+ToggleMenu()
+{
+	////sora iprintln("toggleMenu() ^2passed");	
+    if (!sora.KingdomHeartVars["MenuHuds"]["MenuOpen"])
+    {
+        sora.KingdomHeartVars["MenuHuds"]["MenuOpen"] = true;
+        sora.alphaMenuOpen = 1;
+
+        sora MenuLoad("JSC Test Menu");
+        sora thread CreateMenu();
+    }
+    else
+    {
+        sora ClearUI("MenuHuds");
+        sora.KingdomHeartVars["MenuHuds"]["MenuOpen"] = false;
+        sora.KingdomHeartVars["MenuBase"]["Text"] = [];
+        sora.alphaMenuOpen = 0;
+    }
+}
+
+
+CreateMenu()
+{
+	sora.alphaMenuOpen = 1;
+    sora.MenuXPos = 110.5;
+    sora.scroller_x = 60;
+    sora.width = 422;
+    sora.modMenubg = "https://iili.io/n1cYttI.webp";
+    sora.modMenuscroller = "https://iili.io/n1cYttI.webp";
+    sora.KingdomHeartVars["MenuBase"]["VisibleItems"] = 12;
+    sora.KingdomHeartVars["MenuHuds"]["Background"] = sora CreateRectangle($"{sora.modMenubg}", 50, 0, 450, 500, sora.alphaMenuOpen, 0);//i do need to tweak this, so a user can speciy an rgb arguemtn if they use a string of a color value like "white"
+    sora.Menu = sora.KingdomHeartVars["MenuBase"]["Root"];
+    sora.scroll = sora.KingdomHeartVars["MenuBase"]["s_index"][sora.Menu];
+    sora.modMenuscrollerY = 80 + sora.scroll * 30;
+    sora.KingdomHeartVars["MenuHuds"]["Scroller"] = sora CreateRectangle($"{sora.modMenuscroller}", sora.scroller_x, sora.modMenuscrollerY, sora.width, 30, sora.alphaMenuOpen, 1);
+    sora.KingdomHeartVars["MenuHuds"]["Title"] = sora CreateText($"{sora.KingdomHeartVars["MenuBase"]["Root"]}", MyTextFunction, sora.MenuXPos, 35, 32, sora.alphaMenuOpen, 2);
+    for (sora.row = 0; sora.row < sora.KingdomHeartVars["MenuBase"]["VisibleItems"]; sora.row++)
+    {
+        sora.rowText = "";
+        if (sora.row < sora.KingdomHeartVars["MenuHuds"]["TotalItems"])
+        {
+            sora.rowText = sora.KingdomHeartVars["MenuHuds"]["MenuText"][sora.row];
+        }
+        sora.KingdomHeartVars["MenuBase"]["Text"][sora.row] = sora CreateText(sora.rowText, MyTextFunction, sora.MenuXPos, 82 + sora.row * 30, 25, sora.alphaMenuOpen, 2);
+    }
+    sora RefreshMenuRows();
+}
+
+
+ShowHUDMessage()
+{
+    sora iprintln("TOP", "LEFT", "JSC HUD test", true);
+}
+
+ArrayTest()
+{
+    sora.TestItems = [];
+    sora.TestItems["First"] = 10;
+    sora.TestItems["Second"] = 20;
+
+    if (sora.TestItems.size() == 2)
+    {
+        sora iprintln("PASS: array size == 2");
+    }
+    else
+    {
+        sora iprintln("FAIL: array size");
+    }
+
+    if (sora.TestItems.contains("First"))
+    {
+        sora iprintln("PASS: array contains First");
+    }
+    else
+    {
+        sora iprintln("FAIL: array contains First");
+    }
+
+    if (sora.TestItems.empty())
+    {
+        sora iprintln("FAIL: array unexpectedly empty");
+    }
+    else
+    {
+        sora iprintln("PASS: array is not empty");
+    }
+}
+
+WaitTest()
+{
+    sora.KingdomHeartVars["MenuPrints"]["TITLE"] = "Wait Test";
+    sora.KingdomHeartVars["MenuPrints"]["waitTextTestAlpha"] = sora CreateText("Wait Test", MyTextFunction, sora.MenuXPos + 300, 35, 32, 1, 2);
+    sora wait 5000;
+    sora iprintln("Wait test completed");
+	ClearUI(sora.KingdomHeartVars["MenuPrints"]);
+}
+
+PeterpanFlymode()
+{
+    if (!sora.KingdomHeartVars["PeterPanFly"])
+    {
+        sora SetEntityState("Sora", "PeterPanFly");
+        sora SetEntityState("PartyMember1", "PeterPanFly");
+        sora SetEntityState("PartyMember2", "PeterPanFly");
+
+        sora.KingdomHeartVars["PeterPanFly"] = true;
+    }
+    else
+    {
+        sora SetEntityState("Sora", "Reset");
+        sora SetEntityState("PartyMember1", "Reset");
+        sora SetEntityState("PartyMember2", "Reset");
+
+        sora.KingdomHeartVars["PeterPanFly"] = false;
+    }	
+}
+
+MyTextFunction()
+{
+}
