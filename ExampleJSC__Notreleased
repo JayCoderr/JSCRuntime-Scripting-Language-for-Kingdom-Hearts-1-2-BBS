@@ -31,7 +31,7 @@ MenuStructure()
     sora MenuOption("JSC Test Menu", 0, "Array Tests", &SubMenu, "Arrays", "");
     sora MenuOption("JSC Test Menu", 1, "Thread Tests", &SubMenu, "Threads", "");//Flymode()
     sora MenuOption("JSC Test Menu", 2, "UI / HUD Tests", &SubMenu, "UI", "");
-    sora MenuOption("JSC Test Menu", 3, "Flymode", &PeterpanFlymode, "", "");	//what issues do we have? maybe a size fail check, previous menu still fails as well, then it pretty much basically done with script compiler for a while.... only to add game functions...
+    sora MenuOption("JSC Test Menu", 3, "Flymode", &PeterpanFlymode, "", "");
     sora MenuOption("JSC Test Menu", 4, "Close Menu", &ToggleMenu, "", "");
 
     sora MenuTitle("Arrays", "JSC Test Menu");
