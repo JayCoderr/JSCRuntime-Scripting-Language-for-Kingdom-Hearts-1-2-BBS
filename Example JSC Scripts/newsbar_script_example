@@ -1,0 +1,20 @@
+textbarShit()
+{
+    sora.Void.TestData["HUD"]["newsbarx1"] = sora createRectangle("BOTTOM", "LEFT", 0, 1030, 2000, 40, (0,0,0), 0.75, 0, "white");		
+    sora.Void.TestData["HUD"]["newsbarx2"] = sora createRectangle("BOTTOM", "LEFT", 0, 1035, 2000, 2, (1,0,0), 0.45, 0, "white");	//
+    sora.Void.TestData["HUD"]["newsbarx3"] = sora createRectangle("BOTTOM", "LEFT", 0, 1060, 2000, 2, (1,0,0), 0.45, 0, "white");
+    sora.Void.TestData["HUD"]["newsbarTxt"] = sora createText("JSC TEST MENU", 0, 1040, 30, 1);
+
+	speed = 0.5;
+	
+	while(1)
+	{
+		for(x = -1000; x < 1500; x++)
+		{
+			sora.Void.TestData["HUD"]["newsbarTxt"].x = x;
+			wait speed;
+		}
+	
+		sora.Void.TestData["HUD"]["newsbarTxt"].x = -100;
+	}
+}
