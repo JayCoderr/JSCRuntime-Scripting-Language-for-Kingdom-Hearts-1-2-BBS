@@ -1,7 +1,7 @@
 textbarShit()
 {
     sora.Void.TestData["HUD"]["newsbarx1"] = sora createRectangle("BOTTOM", "LEFT", 0, 1030, 2000, 40, (0,0,0), 0.75, 0, "white");		
-    sora.Void.TestData["HUD"]["newsbarx2"] = sora createRectangle("BOTTOM", "LEFT", 0, 1035, 2000, 2, (1,0,0), 0.45, 0, "white");	//
+    sora.Void.TestData["HUD"]["newsbarx2"] = sora createRectangle("BOTTOM", "LEFT", 0, 1035, 2000, 2, (1,0,0), 0.45, 0, "white");
     sora.Void.TestData["HUD"]["newsbarx3"] = sora createRectangle("BOTTOM", "LEFT", 0, 1060, 2000, 2, (1,0,0), 0.45, 0, "white");
     sora.Void.TestData["HUD"]["newsbarTxt"] = sora createText("JSC TEST MENU", 0, 1040, 30, 1);
 
