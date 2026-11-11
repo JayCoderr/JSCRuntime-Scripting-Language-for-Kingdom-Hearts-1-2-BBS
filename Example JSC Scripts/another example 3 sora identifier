@@ -1,0 +1,105 @@
+init()
+{
+    sora = ([><]);
+
+    sora.Void.TestData["TextCreated"] = false;
+    sora.Void.TestData["RectangleCreated"] = false;
+	sora.MIO = false;
+	
+    sora.Void.TestData["HUD"]["Title"] = sora createText("JSC TEST MENU", 200, 50, 2.0, 1);
+    sora.Void.TestData["HUD"]["Option1"] = sora createText("Array Tests", 200, 100, 1.5, 1);
+    sora.Void.TestData["HUD"]["Option2"] = sora createText(&"{urlimage(https://iili.io/n1cYttI.webp, 100, 100)}", 200, 140, 1.5, 1);
+
+    sora.Void.TestData["TextCreated"] = true;
+
+    sora iprintln("TEXT HUD CREATED");
+
+    sora.Void.TestData["HUD"]["Background"] = sora createRectangle("LEFT", "TOP", 100, 50, 450, 500, (1,0,0), 0.85, 0, "white");
+    sora.Void.TestData["HUD"]["Background1"] = sora createRectangle("RIGHT", "TOP", 600, 50, 200, 500, (0,0,0), 0.85, 0, "white");
+    sora.Void.TestData["HUD"]["Background2"] = sora createRectangle("BOTTOM", "TOP", 1000, 50, 300, 500, (1,0,1), 0.85, 0, "white");	
+    sora.Void.TestData["HUD"]["Background3"] = sora createRectangle("BOTTOM", "TOP", 1500, 50, 450, 500, (1,0,1), 0.85, 0, "https://iili.io/n1cYttI.webp");	
+	
+    sora.Void.TestData["RectangleCreated"] = true;
+
+    sora iprintln("RECTANGLE HUD CREATED");
+    sora iprintln("TITLE: " + sora.Void.TestData["HUD"]["Title"].text);
+    sora iprintln("OPTION 1: " + sora.Void.TestData["HUD"]["Option1"].text);
+    sora iprintln("OPTION 2: " + sora.Void.TestData["HUD"]["Option2"].text);
+
+	sora menuControls();
+	sora textbarShit();
+}
+
+menuControls()
+{
+	while(1)
+	{
+		if (sora ButtonPressed("UP") || sora ButtonPressed("DPAD_UP"))
+		{
+			sora.Void.TestData["HUD"]["Background1"].y += 50;				
+			sora.Void.TestData["HUD"]["Background2"].y -= 50;
+			sora.Void.TestData["HUD"]["Option2"].text = &"{urlimage(https://iili.io/n10Sy0X.webp, 100, 100)}";				
+		}
+		else if (sora ButtonPressed("DPAD_DOWN") || sora ButtonPressed("DOWN"))
+		{
+			sora.Void.TestData["HUD"]["Background1"].y -= 50;
+			sora.Void.TestData["HUD"]["Background2"].y += 50;	
+			sora.Void.TestData["HUD"]["Option2"].text = &"{urlimage(https://iili.io/n1cYttI.webp, 100, 100)}";		
+		}	
+	}	
+}
+
+textbarShit()
+{
+    sora.Void.TestData["HUD"]["newsbarbg"] = sora createRectangle("BOTTOM", "LEFT", 0, 1000, 2000, 40, (0,0,0), 0.75, 0, "white");		
+    sora.Void.TestData["HUD"]["newsbartop"] = sora createRectangle("BOTTOM", "LEFT", 0, 1000, 2000, 2, (1,0,0), 0.45, 0, "white");
+    sora.Void.TestData["HUD"]["newsbarbot"] = sora createRectangle("BOTTOM", "LEFT", 0, 1040, 2000, 2, (1,0,0), 0.45, 0, "white");
+    sora.Void.TestData["HUD"]["newsbarTxt"] = sora createText(&"JSC TEST MENU {urlimage(https://iili.io/n1cYttI.webp, 30, 30)}", 0, 1010, 1.5, 1);//
+
+	speed = 0.5;
+	
+	while(1)
+	{
+		for(x = -300; x < 1500; x++)
+		{
+			sora.Void.TestData["HUD"]["newsbarTxt"].x = x;
+			wait speed;
+		}
+	
+		sora.Void.TestData["HUD"]["newsbarTxt"].x = -300;
+	}
+}
+
+createText(text, x, y, fontSize, alpha)
+{
+    elemTxt = sora newClientHudElem("createtext", sora);
+
+    elemTxt.align = "LEFT";
+    elemTxt.relative = "TOP";
+    elemTxt.fontName = "default";
+    elemTxt.x = x;
+    elemTxt.y = y;
+    elemTxt.fontSize = fontSize;
+    elemTxt.sort = 3;
+    elemTxt.color = (1,1,1);
+    elemTxt.alpha = alpha;
+    elemTxt.text = text;
+
+    return elemTxt;
+}
+
+createRectangle(align, relative, x, y, width, height, color, alpha, sort, shader)
+{
+    elem = sora newClientHudElem("createrectangle", sora);
+    elem.width = width;
+    elem.height = height;
+    elem.align = align;
+    elem.relative = relative;
+    elem.x = x;
+    elem.y = y;
+    elem.sort = sort;
+    elem.color = color;
+    elem.alpha = alpha;
+    elem.shader = shader;
+    return elem;
+}
