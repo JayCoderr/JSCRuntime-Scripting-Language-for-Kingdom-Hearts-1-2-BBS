@@ -1,20 +1,20 @@
-newsbarShit()
+textbarShit()
 {
-    sora.Void.TestData["HUD"]["newsbarx1"] = sora createRectangle("BOTTOM", "LEFT", 0, 1030, 2000, 40, (0,0,0), 0.75, 0, "white");		
-    sora.Void.TestData["HUD"]["newsbarx2"] = sora createRectangle("BOTTOM", "LEFT", 0, 1035, 2000, 2, (1,0,0), 0.45, 0, "white");
-    sora.Void.TestData["HUD"]["newsbarx3"] = sora createRectangle("BOTTOM", "LEFT", 0, 1060, 2000, 2, (1,0,0), 0.45, 0, "white");
-    sora.Void.TestData["HUD"]["newsbarTxt"] = sora createText("JSC TEST MENU", 0, 1040, 30, 1);
+    sora.Void.TestData["HUD"]["newsbarbg"] = sora createRectangle("BOTTOM", "LEFT", 0, 1000, 2000, 40, (0,0,0), 0.75, 0, "white");		
+    sora.Void.TestData["HUD"]["newsbartop"] = sora createRectangle("BOTTOM", "LEFT", 0, 1000, 2000, 2, (1,0,0), 0.45, 0, "white");
+    sora.Void.TestData["HUD"]["newsbarbot"] = sora createRectangle("BOTTOM", "LEFT", 0, 1040, 2000, 2, (1,0,0), 0.45, 0, "white");
+    sora.Void.TestData["HUD"]["newsbarTxt"] = sora createText(&"JSC TEST MENU {urlimage(https://iili.io/n1cYttI.webp, 30, 30)}", 0, 1010, 1.5, 1);//
 
 	speed = 0.5;
 	
 	while(1)
 	{
-		for(x = -1000; x < 1500; x++)
+		for(x = -300; x < 1500; x++)
 		{
 			sora.Void.TestData["HUD"]["newsbarTxt"].x = x;
 			wait speed;
 		}
 	
-		sora.Void.TestData["HUD"]["newsbarTxt"].x = -100;
+		sora.Void.TestData["HUD"]["newsbarTxt"].x = -300;
 	}
 }
