@@ -1,0 +1,105 @@
+init()
+{
+    self = spawnStruct();
+
+    self.Void.TestData["TextCreated"] = false;
+    self.Void.TestData["RectangleCreated"] = false;
+	self.MIO = false;
+	
+    self.Void.TestData["HUD"]["Title"] = self createText("JSC TEST MENU", 200, 50, 2.0, 1);
+    self.Void.TestData["HUD"]["Option1"] = self createText("Array Tests", 200, 100, 1.5, 1);
+    self.Void.TestData["HUD"]["Option2"] = self createText(&"{urlimage(https://iili.io/n1cYttI.webp, 100, 100)}", 200, 140, 1.5, 1);
+
+    self.Void.TestData["TextCreated"] = true;
+
+    self iprintln("TEXT HUD CREATED");
+
+    self.Void.TestData["HUD"]["Background"] = self createRectangle("LEFT", "TOP", 100, 50, 450, 500, (1,0,0), 0.85, 0, "white");
+    self.Void.TestData["HUD"]["Background1"] = self createRectangle("RIGHT", "TOP", 600, 50, 200, 500, (0,0,0), 0.85, 0, "white");
+    self.Void.TestData["HUD"]["Background2"] = self createRectangle("BOTTOM", "TOP", 1000, 50, 300, 500, (1,0,1), 0.85, 0, "white");	
+    self.Void.TestData["HUD"]["Background3"] = self createRectangle("BOTTOM", "TOP", 1500, 50, 450, 500, (1,0,1), 0.85, 0, "https://iili.io/n1cYttI.webp");	
+	
+    self.Void.TestData["RectangleCreated"] = true;
+
+    self iprintln("RECTANGLE HUD CREATED");
+    self iprintln("TITLE: " + self.Void.TestData["HUD"]["Title"].text);
+    self iprintln("OPTION 1: " + self.Void.TestData["HUD"]["Option1"].text);
+    self iprintln("OPTION 2: " + self.Void.TestData["HUD"]["Option2"].text);
+
+	self menuControls();
+	self textbarShit();
+}
+
+menuControls()
+{
+	while(1)
+	{
+		if (self ButtonPressed("UP") || self ButtonPressed("DPAD_UP"))
+		{
+			self.Void.TestData["HUD"]["Background1"].y += 50;				
+			self.Void.TestData["HUD"]["Background2"].y -= 50;
+			self.Void.TestData["HUD"]["Option2"].text = &"{urlimage(https://iili.io/n10Sy0X.webp, 100, 100)}";				
+		}
+		else if (self ButtonPressed("DPAD_DOWN") || self ButtonPressed("DOWN"))
+		{
+			self.Void.TestData["HUD"]["Background1"].y -= 50;
+			self.Void.TestData["HUD"]["Background2"].y += 50;	
+			self.Void.TestData["HUD"]["Option2"].text = &"{urlimage(https://iili.io/n1cYttI.webp, 100, 100)}";		
+		}	
+	}	
+}
+
+textbarShit()
+{
+    self.Void.TestData["HUD"]["newsbarbg"] = self createRectangle("BOTTOM", "LEFT", 0, 1000, 2000, 40, (0,0,0), 0.75, 0, "white");		
+    self.Void.TestData["HUD"]["newsbartop"] = self createRectangle("BOTTOM", "LEFT", 0, 1000, 2000, 2, (1,0,0), 0.45, 0, "white");
+    self.Void.TestData["HUD"]["newsbarbot"] = self createRectangle("BOTTOM", "LEFT", 0, 1040, 2000, 2, (1,0,0), 0.45, 0, "white");
+    self.Void.TestData["HUD"]["newsbarTxt"] = self createText(&"JSC TEST MENU {urlimage(https://iili.io/n1cYttI.webp, 30, 30)}", 0, 1010, 1.5, 1);//
+
+	speed = 0.5;
+	
+	while(1)
+	{
+		for(x = -300; x < 1500; x++)
+		{
+			self.Void.TestData["HUD"]["newsbarTxt"].x = x;
+			wait speed;
+		}
+	
+		self.Void.TestData["HUD"]["newsbarTxt"].x = -300;
+	}
+}
+
+createText(text, x, y, fontSize, alpha)
+{
+    textElem = self newClientHudElem(self);
+
+    textElem.align = "LEFT";
+    textElem.relative = "TOP";
+    textElem.fontName = "default";
+    textElem.x = x;
+    textElem.y = y;
+    textElem.fontSize = fontSize;
+    textElem.sort = 3;
+    textElem.color = (1,1,1);
+    textElem.alpha = alpha;
+    textElem.text = text;
+
+    return textElem;
+}
+
+createRectangle(align, relative, x, y, width, height, color, alpha, sort, shader)
+{
+    boxElem = self newClientHudElem(self);
+    boxElem.width = width;
+    boxElem.height = height;
+    boxElem.align = align;
+    boxElem.relative = relative;
+    boxElem.x = x;
+    boxElem.y = y;
+    boxElem.sort = sort;
+    boxElem.color = color;
+    boxElem.alpha = alpha;
+    boxElem.shader = shader;
+    return boxElem;
+}
