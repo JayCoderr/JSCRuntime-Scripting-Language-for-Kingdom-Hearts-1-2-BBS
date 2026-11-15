@@ -21,7 +21,7 @@ onPlayerSpawned()
         sora iprintln($"Welcome to {sora.menu["name"]} ^7for KH1");
         sora iprintln(&"By ^2CabCon {urlimage(https://iili.io/nmguPwP.png, 30, 30)}");
         sora initMenuOpts();
-        sora thread initMenu();//
+        sora thread initMenu();
 		sora thread textbarShit();
     }
 }
