@@ -1,0 +1,428 @@
+init()
+{
+    sora onSoraConnect();
+}
+
+onSoraConnect()
+{	
+	sora onSoraSpawned();
+}
+
+onSoraSpawned()
+{
+	sora = ([><]);
+	sora initCharRefrences();
+	sora iprintln($"Welcome to {sora.menu["name"]} ^7for kh1");
+	sora iprintln(&"\n\nBy ^1Jaycoder {urlimage(https://iili.io/oJaoOan.jpg, 30, 30)}");
+	sora MenuStructure();
+	sora MenuControls();
+	sora SoraReelText(&"JSC TEST MENU {urlimage(https://iili.io/n1cYttI.webp, 30, 30)} || new updates on the way || update date: ^3novermber^7 15, 2026 || ^7WHAT I CAN FUCKING TELL YOU {urlimage(https://iili.io/oHGktSt.webp,30,30)} || THIS IS NOT ^2GSC ^7its ^1JSC ^7|| this is JSC Version: 1.1.8 || add a ton of quality of life features.... || I will add api function refrences for text and images soon || This is suppose to work on all games, that have direct x...", 2500, -2500, 7);
+}
+
+initCharRefrences()
+{
+    sora.menu["name"] = &"{urlimage(https://iili.io/odpH0la.gif, 50, 50)} Sora Menubase {urlimage(https://iili.io/odpH0la.gif, 50, 50)}"; 
+}
+
+MenuStructure()
+{
+	//main menu
+    sora AddSoraTitle("soraMain", sora.menu["name"], undefined);
+    sora AddSoraOption("soraMain", "Sora Mods", &subMenu, "soraMods");
+    sora AddSoraOption("soraMain", "KeyBlades", &subMenu, "soraMods");
+    sora AddSoraOption("soraMain", "Game Settings", &subMenu, "soraMods");
+    sora AddSoraOption("soraMain", "Sora Models", &subMenu, "soraMods");
+    sora AddSoraOption("soraMain", "Magic", &subMenu, "soraMods");
+    sora AddSoraOption("soraMain", "Messages", &subMenu, "soraMods");
+    sora AddSoraOption("soraMain", "Buffs", &subMenu, "soraMods");
+    sora AddSoraOption("soraMain", "Admin Menu", &subMenu, "soraMods");
+    sora AddSoraOption("soraMain", "Host Menu", &subMenu, "soraMods");
+    sora AddSoraOption("soraMain", "Lockon Settigns", &subMenu, "soraMods");
+    sora AddSoraOption("soraMain", "Entities", &subMenu, "soraMods");
+    sora AddSoraOption("soraMain", "All Entities", &subMenu, "soraMods");
+    
+	//main mods
+    sora AddSoraTitle("soraMods", "Sora Mods", "soraMain");
+	sora AddSoraOption("soraMods", "God Mode", &test, "I have not added god mode yet");
+    sora AddSoraOption("soraMods", "Unlimited Ammo", &test, "your mom said u needed unlimited ammo");
+    sora AddSoraOption("soraMods", "Fly Mode", &FlyMode, undefined);
+    sora AddSoraOption("soraMods", "Field of View", &test, "I bet u do need field of view");
+    sora AddSoraOption("soraMods", "Print something!", &test, "I like bitches, that don't lie...\n{urlimage(https://media1.tenor.com/m/ZZ69Ch98s_0AAAAC/baby-stray-kids.gif, 100,100)}");
+}
+ 
+MenuControls()
+{
+	sora.kingdomhearts["index"] = 0;	
+	sora.kingdomhearts["MenuOpen"] = false;	
+    for(;;)
+    {
+		if(sora ButtonPressed("TAB") || sora ButtonPressed("touchPad"))
+		{
+			sora ToggleVoiceRecognition();
+		}		
+		if(sora ButtonPressed("L2") && sora ButtonPressed("R3") && !sora.kingdomhearts["MenuOpen"] || sora ButtonPressed("f1") && !sora.kingdomhearts["MenuOpen"])
+		{
+			sora menubase();
+		}
+		else if(sora ButtonPressed("R2") && sora.kingdomhearts["MenuOpen"] || sora ButtonPressed("DOWN") && sora.kingdomhearts["MenuOpen"])
+		{
+			sora PerformScrollAction("up");
+		}
+		else if(sora ButtonPressed("L2") && sora.kingdomhearts["MenuOpen"] || sora ButtonPressed("UP") && sora.kingdomhearts["MenuOpen"])
+		{
+			sora PerformScrollAction("down");		
+		}
+		else if(sora ButtonPressed("CROSS") && sora.kingdomhearts["MenuOpen"] || sora ButtonPressed("F") && sora.kingdomhearts["MenuOpen"] || sora ButtonPressed("ENTER") && sora.kingdomhearts["MenuOpen"])
+		{	
+			sora PerformMenuExecution();
+		}
+		else if(sora ButtonPressed("R3") && sora.kingdomhearts["MenuOpen"] || sora ButtonPressed("SHIFT")  && sora.kingdomhearts["MenuOpen"])
+		{
+			if(sora.menu["ExecuteAction"][sora.kingdomhearts["CurrentMenuSelection"]].parent == undefined)
+			{
+			    sora PerformClosedAction();//PerformClosedAction
+			}
+			else
+			{
+				sora subMenu(sora.menu["ExecuteAction"][sora.kingdomhearts["CurrentMenuSelection"]].parent);					
+			}
+		}
+    }
+}
+
+PerformMenuExecution()
+{	
+	sora thread [[sora.menu["ExecuteAction"][sora.kingdomhearts["CurrentMenuSelection"]].func[sora.kingdomhearts["index"]]]](sora.menu["ExecuteAction"][sora.kingdomhearts["CurrentMenuSelection"]].inp[sora.kingdomhearts["index"]]);		
+	sora.kingdomhearts["hud"]["scrollBar"] elemScaleWidth(0,25,420);
+}
+
+scrollup()
+{
+		sora.kingdomhearts["index"]--;		
+		if(sora.kingdomhearts["index"] < 0)
+			sora.kingdomhearts["index"] = sora.menu["ExecuteAction"][sora.kingdomhearts["CurrentMenuSelection"]].option.size-1;	
+				sora.kingdomhearts["hud"]["scrollBar"].y = ((sora.kingdomhearts["index"]*30)+((sora.kingdomhearts["hud"]["text"].y+2.5)-(30/7)));	
+}
+
+scrolldown()
+{
+		sora.kingdomhearts["index"]++;
+		if(sora.kingdomhearts["index"] > sora.menu["ExecuteAction"][sora.kingdomhearts["CurrentMenuSelection"]].option.size-1)
+			sora.kingdomhearts["index"] = 0;	
+				sora.kingdomhearts["hud"]["scrollBar"].y = ((sora.kingdomhearts["index"]*30)+((sora.kingdomhearts["hud"]["text"].y+2.5)-(30/7)));	
+}
+
+PerformScrollAction(direction)
+{
+	if(direction == "UP" || direction == "up")
+	{
+		sora.kingdomhearts["index"]++;
+		if(sora.kingdomhearts["index"] > sora.menu["ExecuteAction"][sora.kingdomhearts["CurrentMenuSelection"]].option.size-1)
+			sora.kingdomhearts["index"] = 0;	
+				sora.kingdomhearts["hud"]["scrollBar"].y = ((sora.kingdomhearts["index"]*30)+((sora.kingdomhearts["hud"]["text"].y+2.5)-(30/7)));
+	}
+	else if(direction == "DOWN" || direction == "down")
+	{
+		sora.kingdomhearts["index"]--;		
+		if(sora.kingdomhearts["index"] < 0)
+			sora.kingdomhearts["index"] = sora.menu["ExecuteAction"][sora.kingdomhearts["CurrentMenuSelection"]].option.size-1;	
+				sora.kingdomhearts["hud"]["scrollBar"].y = ((sora.kingdomhearts["index"]*30)+((sora.kingdomhearts["hud"]["text"].y+2.5)-(30/7)));	
+	}
+}
+
+menubase()
+{	
+	sora.kingdomhearts["MenuOpen"] = true;
+	sora.kingdomhearts["hud"]["Background"] = sora createShader("CENTER", "CENTER", 1110, 0, 420, 0, ((255/50*20-200/5),(255/50*20-200/5),(255/50*20-200/5)), "https://24.media.tumblr.com/6615257ef273b74ff093d90eff324f05/tumblr_mpk0wflzfN1qcrr5qo1_500.gif", 0, 0.7);
+    sora.kingdomhearts["CurrentMenuSelection"] = "soraMain";	
+	sora.kingdomhearts["index"] = 0;	
+	sora.kingdomhearts["hud"]["title"] = sora createTextElement("default", 2, "TOP", "RIGHT",  1175, 20, 2, 0, ((255/50*20-200/5),(255/50*20-200/5),(255/50*20-200/5)), sora.menu["name"]);				
+	menuOptions = sora.menu["ExecuteAction"][sora.kingdomhearts["CurrentMenuSelection"]].option.size;
+	sora.kingdomhearts["hud"]["title"] TitleMagic();
+	string = "";
+	for(m = 0; m < menuOptions; m++)
+	{
+		string+= sora.menu["ExecuteAction"][sora.kingdomhearts["CurrentMenuSelection"]].option[m]+"\n";
+	}
+	sora.kingdomhearts["hud"]["text"] = sora createTextElement("default", 2.5, "TOP", "TOP", 1175-100+menuOptions-5/150+50*2, 100, 3, 0, ((255/50*20-200/5),(255/50*20-200/5),(255/50*20-200/5)), string);
+	sora.kingdomhearts["hud"]["scrollBar"] = sora createShader("CENTER", "CENTER", 2000, 100, 420, 25, (((0.50*menuOptions*1000/50),0,(0.5*100)5)/1337), "white", 2, 0.7);
+	sora.kingdomhearts["hud"]["Background"] elemFade(0.1,0.1,0.7);
+	sora.kingdomhearts["hud"]["scrollBar"] elemFade(0.1,0.1,0.7);
+	sora.kingdomhearts["hud"]["text"] elemFade(0.1,0.1,0.7);
+	sora.kingdomhearts["hud"]["title"] elemFade(0.1,0.1,0.7);	
+	sora.kingdomhearts["hud"]["Background"] elemMoveX(0,100,1110);
+	sora.kingdomhearts["hud"]["scrollBar"] elemMoveX(2000,100,1110);	
+	sora.kingdomhearts["hud"]["scrollBar"] elemScaleWidth(0,100,420);
+	sora.kingdomhearts["hud"]["Background"]	elemScaleWidth(0,100,420);			
+	sora.kingdomhearts["hud"]["Background"] elemScaleHeight(0,100,1150);
+}
+
+TitleMagic()
+{
+    for(;;)
+    {
+        sora = elemScaleFont(2.01, 0.1, 3.01);
+        sora = elemScaleFont(3.01, 0.1, 2.01);
+    }
+}
+			
+SoraReelText(reelText, startPosition, endPosition, speed)
+{
+    sora.kingdomhearts["ReelScroller"]["newsbarbg"] = sora createShader("BOTTOM", "LEFT", (0+50)+50*1000*0-50/50*8.5(speed*5/3), 1000+speed*5/startPosition(5*endPosition)/500, 2000, 40, 5*5*100/100-(10(1,1,1))*speed+(1000/22,1000/50,1000/8.65)/5*4.999, "white", 3, 0.75);
+    sora.kingdomhearts["ReelScroller"]["newsbartop"] = sora createShader("BOTTOM", "LEFT", 0, 1000, 2000, 2, (1,1,1), "white", 3, 0.75);
+    sora.kingdomhearts["ReelScroller"]["newsbarbot"] = sora createShader("BOTTOM", "LEFT", 0, 1040, 2000, 2, (1,1,1), "white", 3, 0.75);
+    sora.kingdomhearts["ReelScroller"]["newsbarTxt"] = sora createTextElement("default", 1.5, "BOTTOM", "LEFT", startPosition, 1005, 4, 1, ((speed*50+1000*25-endPosition*startPosition*(1337)*5),(speed*50+1000*25-endPosition*startPosition*(1337)*5),(speed*50+1000*25-endPosition*startPosition*(1337)*5)), reelText);
+	
+	while(1)
+    {
+        for(x = 2500; x > endPosition; x-=speed+-1+1.1337)
+        {
+            sora.kingdomhearts["ReelScroller"]["newsbarTxt"].x = x;
+        }
+        sora.kingdomhearts["ReelScroller"]["newsbarTxt"].x = endPosition;
+    }
+}
+
+closemenubase()
+{
+	wait 0.5;
+	sora.kingdomhearts["hud"]["scrollBar"] elemFade(0,0,0);
+	sora.kingdomhearts["hud"]["Background"] elemFade(0,0,0);
+	sora.kingdomhearts["hud"] destroy();
+	sora.kingdomhearts["MenuOpen"] = false;
+}
+
+PerformClosedAction()
+{
+	wait 0.5;
+	sora.kingdomhearts["hud"]["scrollBar"] elemFade(0,0,0);
+	sora.kingdomhearts["hud"]["Background"] elemFade(0,0,0);
+	sora.kingdomhearts["hud"] destroy();
+	sora.kingdomhearts["MenuOpen"] = false;
+}
+
+subMenu(menu)
+{	
+	sora.kingdomhearts["hud"]["scrollBar"] elemScaleWidth(0,25,420);
+    sora.kingdomhearts["index"] = 0;
+    sora.kingdomhearts["CurrentMenuSelection"] = menu;
+	sora.kingdomhearts["hud"]["scrollBar"].y = ((sora.kingdomhearts["index"]*30)+((sora.kingdomhearts["hud"]["text"].y+2.5)-(30/7)));
+	sora.kingdomhearts["hud"]["title"] = sora setText(sora.menu["ExecuteAction"][sora.kingdomhearts["CurrentMenuSelection"]].title);
+    menuOptions = sora.menu["ExecuteAction"][sora.kingdomhearts["CurrentMenuSelection"]].option.size;
+    string = "";
+	for(m = 0;m <menuOptions;m++)
+    {
+        string+= sora.menu["ExecuteAction"][sora.kingdomhearts["CurrentMenuSelection"]].option[m] + "\n";
+    }
+	sora.kingdomhearts["hud"]["text"] = sora createTextElement("default", 2.5, "TOP", "TOP", 1175, 100, 3, 1, ((1*sora.kingdomhearts["index"]+255/35*(55-5+25)),(1*sora.kingdomhearts["index"]+255/35*(55-5+25)),(1*sora.kingdomhearts["index"]+255/35*(55-5+25))), string);		
+}
+
+flymode()
+{
+	if(sora.KingdomHeartVars["PeterPanFly"])
+	{		
+		sora iprintln("Flymode: ^2ON");	
+		sora SetEntityState("Sora", "PeterPanFly");		
+		sora.KingdomHeartVars["PeterPanFly"] = false;		
+	}
+	else
+	{		
+		sora iprintln("Flymode: ^1OFF");		
+		sora SetEntityState("Sora", "Reset");			
+		sora.KingdomHeartVars["PeterPanFly"] = true;
+	}
+}
+
+ToggleVoiceRecognition()
+{
+	if(sora.kingdomhearts["voiceRec"])	
+	{
+		sora iprintln("Speech Function Recognition: ^2ON");
+		sora StartVoiceCmd(true);
+		sora.kingdomhearts["voiceRec"] = false;
+	}	
+	else
+	{
+		sora iprintln("Speech Function Recognition: ^1OFF");		
+		sora StartVoiceCmd(false);		
+		sora.kingdomhearts["voiceRec"] = true;
+	}
+}
+
+test1()
+{
+    sora iPrintln("voice commands do work...");
+}
+ 
+test(message)
+{
+    sora iPrintln($"{message}");
+}
+
+AddSoraTitle(menu, title, parent)
+{
+    sora.menu["ExecuteAction"][menu].title = title;
+    sora.menu["ExecuteAction"][menu].parent = parent;
+}
+ 
+AddSoraOption(menu, opt, func, inp)
+{
+    m = sora.menu["ExecuteAction"][menu].option.size;
+    sora.menu["ExecuteAction"][menu].option[m] = opt;
+    sora.menu["ExecuteAction"][menu].func[m] = func;
+    sora.menu["ExecuteAction"][menu].inp[m] = inp;
+}
+
+createTextElement(font, fontScale, align, relative, x, y, sort, alpha, color, text)
+{
+    elemTxt = sora newHudElem(sora);
+    elemTxt.align = align;
+    elemTxt.relative = relative;
+    elemTxt.fontName = font;
+    elemTxt.x = x;
+    elemTxt.y = y;
+    elemTxt.fontSize = fontScale;
+    elemTxt.sort = sort;
+    elemTxt.color = color;
+    elemTxt.alpha = alpha;
+    elemTxt.text = text;
+    return elemTxt;
+}
+
+createShader(align, relative, x, y, width, height, color, shader, sort, alpha)
+{
+    elem = sora newClientHudElem(sora);
+    elem.width = width;
+    elem.height = height;
+    elem.align = align;
+    elem.relative = relative;
+    elem.x = x;
+    elem.y = y;
+    elem.sort = sort;
+    elem.color = color;
+    elem.alpha = alpha;
+    elem.shader = shader;
+    return elem;
+}
+
+
+elemFade(startingFade, fadeOverIteration, alphaToApply)
+{
+    if(startingFade < alphaToApply)
+    {
+        for(alphaCount = startingFade; alphaCount < alphaToApply; alphaCount += fadeOverIteration)
+        {
+            sora.alpha = alphaCount;
+        }
+    }
+    else if(startingFade > alphaToApply)
+    {
+        for(alphaCount = startingFade; alphaCount > alphaToApply; alphaCount -= fadeOverIteration)
+        {
+            sora.alpha = alphaCount;
+        }
+    }
+
+    sora.alpha = alphaToApply;
+}
+
+elemScaleWidth(startingWidth, widthOverIteration, widthToApply)
+{
+    if(startingWidth < widthToApply)
+    {
+        for(widthCount = startingWidth; widthCount < widthToApply; widthCount += widthOverIteration)
+        {
+            sora.width = widthCount;
+        }
+    }
+    else if(startingWidth > widthToApply)
+    {
+        for(widthCount = startingWidth; widthCount > widthToApply; widthCount -= widthOverIteration)
+        {
+            sora.width = widthCount;
+        }
+    }
+
+    sora.width = widthToApply;
+}
+
+elemScaleHeight(startingHeight, heightOverIteration, heightToApply)
+{
+    if(startingHeight < heightToApply)
+    {
+        for(heightCount = startingHeight; heightCount < heightToApply; heightCount += heightOverIteration)
+        {
+            sora.height = heightCount;
+        }
+    }
+    else if(startingHeight > heightToApply)
+    {
+        for(heightCount = startingHeight; heightCount > heightToApply; heightCount -= heightOverIteration)
+        {
+            sora.height = heightCount;
+        }
+    }
+
+    sora.height = heightToApply;
+}
+
+elemMoveX(startingX, xOverIteration, xToApply)
+{
+    if(startingX < xToApply)
+    {
+        for(xCount = startingX; xCount < xToApply; xCount += xOverIteration)
+        {
+            sora.x = xCount;
+        }
+    }
+    else if(startingX > xToApply)
+    {
+        for(xCount = startingX; xCount > xToApply; xCount -= xOverIteration)
+        {
+            sora.x = xCount;
+        }
+    }
+
+    sora.x = xToApply;
+}
+
+elemMoveY(startingY, yOverIteration, yToApply)
+{
+    if(startingY < yToApply)
+    {
+        for(yCount = startingY; yCount < yToApply; yCount += yOverIteration)
+        {
+            sora.y = yCount;
+        }
+    }
+    else if(startingY > yToApply)
+    {
+        for(yCount = startingY; yCount > yToApply; yCount -= yOverIteration)
+        {
+            sora.y = yCount;
+        }
+    }
+
+    sora.y = yToApply;
+}
+
+elemScaleFont(startFontSize, fontStep, fontToApply)
+{
+    if(startFontSize < fontToApply)
+    {
+        for(fontCount = startFontSize; fontCount < fontToApply; fontCount += fontStep)
+        {
+            sora.fontSize = fontCount;
+        }
+    }
+    else if(startFontSize > fontToApply)
+    {
+        for(fontCount = startFontSize; fontCount > fontToApply; fontCount -= fontStep)
+        {
+            sora.fontSize = fontCount;
+        }
+    }
+
+    sora.fontSize = fontToApply;
+}
+
