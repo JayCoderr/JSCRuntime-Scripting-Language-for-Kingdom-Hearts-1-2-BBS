@@ -56,7 +56,7 @@ MenuControls()
 	sora.kingdomhearts["MenuOpen"] = false;	
     for(;;)
     {
-		if(sora ButtonPressed("TAB") || sora ButtonPressed("touchPad"))
+		if(sora ButtonPressed("TAB") && !sora.kingdomhearts["MenuOpen"] || sora ButtonPressed("DPAD_LEFT") && !sora.kingdomhearts["MenuOpen"])
 		{
 			sora ToggleVoiceRecognition();
 		}		
