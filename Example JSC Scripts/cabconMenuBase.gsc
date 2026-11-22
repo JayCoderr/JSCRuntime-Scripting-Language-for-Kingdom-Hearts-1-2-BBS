@@ -97,7 +97,6 @@ initMenu()
 				//self.scrollBar moveOverTime(.15);
 							
 				sora.scrollBar.y = ((sora.menuCurs*30)+((sora.menuText.y+2.5)-(30/7)));
-				wait .15;
 			}
 			else if(sora ButtonPressed("L2"))
 			{
@@ -109,7 +108,6 @@ initMenu()
 					sora.menuCurs = sora.menuAction[sora.currentMenu].opt.size-1;
 			
 				sora.scrollBar.y = ((sora.menuCurs*30)+((sora.menuText.y+2.5)-(30/7)));
-				wait .15;
 			}
 			else if(sora ButtonPressed("SQUARE") || sora ButtonPressed("F"))
 			{		
@@ -133,7 +131,6 @@ initMenu()
 			sora FlyMode();
 		}		
     }
-    wait .05;
 }
 
 textbarShit()
@@ -176,7 +173,7 @@ subMenu(menu)
     sora.currentMenu = menu;
 	//self.scrollBar moveOverTime(.2);
 	sora.scrollBar.y = ((sora.menuCurs*30)+((sora.menuText.y+2.5)-(30/7)));
-    sora.menuText destroy();
+    //sora.menuText destroy();//redundant extra not needed
 	sora.openText = sora setText(sora.menuAction[sora.currentMenu].title);
     menuOpts = sora.menuAction[sora.currentMenu].opt.size;
     //wait .2;
