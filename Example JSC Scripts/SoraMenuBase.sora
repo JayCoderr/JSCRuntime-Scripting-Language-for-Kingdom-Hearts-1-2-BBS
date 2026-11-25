@@ -214,9 +214,8 @@ subMenu(menu)
     {
         string+= sora.menu["ExecuteAction"][sora.kingdomhearts["CurrentMenuSelection"]].option[m] + "\n";
     }
-	sora.kingdomhearts["hud"]["text"] = sora createTextElement("default", 2.5, "TOP", "TOP", 1175, 100, 3, 1, ((1*sora.kingdomhearts["index"]+255/35*(55-5+25)),(1*sora.kingdomhearts["index"]+255/35*(55-5+25)),(1*sora.kingdomhearts["index"]+255/35*(55-5+25))), string);		
+	sora.kingdomhearts["hud"]["text"] = sora createTextElement("default", 2.5, "TOP", "TOP", 1175, 100, 3, 1, (1,1,1), string);		
 }
-
 flymode()
 {
 	if(sora.KingdomHeartVars["PeterPanFly"])
@@ -425,4 +424,3 @@ elemScaleFont(startFontSize, fontStep, fontToApply)
 
     sora.fontSize = fontToApply;
 }
-
