@@ -1,5 +1,5 @@
 init()
-{
+{	
     sora onPlayerConnect();
 }
 
@@ -11,11 +11,12 @@ onPlayerConnect()
 
 onPlayerSpawned()
 {
+	//sora.menu["active"] = true;
     sora iPrintln("^1cabconmodding.com");
-	sora freezeControls(false);
+	//sora freezeControls(false); -- is fucked up not sure when or how or why on a new update than 1.1.8
     if(!isDefined(sora.menu["active"]))
-    {	
-		sora = spawnStruct();
+    {
+		sora = spawnStruct();		
         sora init_menuSystem();
 		sora.menu["active"] = true;
         sora iprintln($"Welcome to {sora.menu["name"]} ^7for KH1");
